@@ -7,6 +7,15 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 
+class AppSettings(db.Model):
+    __tablename__ = 'app_settings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.Text)
+    category = db.Column(db.String(50), default='general')
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class Entreprise(db.Model):
     __tablename__ = 'entreprises'
     
@@ -15,11 +24,14 @@ class Entreprise(db.Model):
     adresse = db.Column(db.String(500))
     telephone = db.Column(db.String(20))
     email = db.Column(db.String(100))
+    logo = db.Column(db.String(500))
     actif = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    admin_principal_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
-    users = db.relationship('User', back_populates='entreprise', lazy='dynamic')
+    users = db.relationship('User', back_populates='entreprise', lazy='dynamic', foreign_keys='User.entreprise_id')
     chantiers = db.relationship('Chantier', back_populates='entreprise', lazy='dynamic')
+    admin_principal = db.relationship('User', foreign_keys=[admin_principal_id], post_update=True)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -35,8 +47,8 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
-    entreprise = db.relationship('Entreprise', back_populates='users')
-    created_by = db.relationship('User', remote_side=[id], backref='created_users')
+    entreprise = db.relationship('Entreprise', back_populates='users', foreign_keys=[entreprise_id])
+    created_by = db.relationship('User', remote_side=[id], backref='created_users', foreign_keys=[created_by_id])
     assignments = db.relationship('ChantierAssignment', back_populates='user', lazy='dynamic')
     achats = db.relationship('Achat', back_populates='saisi_par', lazy='dynamic', foreign_keys='Achat.user_id')
     avances = db.relationship('Avance', back_populates='beneficiaire', lazy='dynamic', foreign_keys='Avance.user_id')
