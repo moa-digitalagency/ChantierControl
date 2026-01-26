@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Saisie des Heures{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('dashboard.index') }}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-1"></i> Retour
+        </a>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">
+            <i class="fas fa-clock text-purple-600 mr-2"></i>
+            Saisie des Heures
+        </h1>
+        
+        <form method="POST" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Chantier *</label>
+                <select name="chantier_id" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">-- Sélectionner un chantier --</option>
+                    {% for chantier in chantiers %}
+                    <option value="{{ chantier.id }}">{{ chantier.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Type de travail</label>
+                <select name="type_travail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="main_oeuvre">Main d'oeuvre</option>
+                    <option value="maconnerie">Maçonnerie</option>
+                    <option value="electricite">Électricité</option>
+                    <option value="plomberie">Plomberie</option>
+                    <option value="peinture">Peinture</option>
+                    <option value="menuiserie">Menuiserie</option>
+                    <option value="autres">Autres</option>
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantité (heures) *</label>
+                    <input type="number" name="quantite" required step="0.5" min="0" id="quantite"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="8">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarif unitaire (MAD/h) *</label>
+                    <input type="number" name="tarif_unitaire" required step="0.01" min="0" id="tarif"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="50">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Coût total</label>
+                    <input type="text" id="coutTotal" readonly
+                           class="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 font-medium"
+                           value="0.00 MAD">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                <input type="date" name="date_travail" required
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea name="description" rows="3"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Description du travail effectué..."></textarea>
+            </div>
+            
+            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                <i class="fas fa-save mr-2"></i> Enregistrer les heures
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function calculerCout() {
+    const quantite = parseFloat(document.getElementById('quantite').value) || 0;
+    const tarif = parseFloat(document.getElementById('tarif').value) || 0;
+    const total = quantite * tarif;
+    document.getElementById('coutTotal').value = total.toFixed(2) + ' MAD';
+}
+
+document.getElementById('quantite').addEventListener('input', calculerCout);
+document.getElementById('tarif').addEventListener('input', calculerCout);
+</script>
+{% endblock %}

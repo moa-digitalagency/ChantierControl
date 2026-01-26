@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de Bord Direction{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Tableau de Bord</h1>
+            <p class="text-gray-500">Vue d'ensemble des chantiers</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{{ url_for('chantiers.nouveau') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                <i class="fas fa-plus"></i> Nouveau Chantier
+            </a>
+        </div>
+    </div>
+    
+    {% if alerte_saisies %}
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+            <div>
+                <p class="font-medium text-yellow-800">{{ alerte_saisies.message }}</p>
+                <a href="{{ url_for('validation.liste') }}" class="text-yellow-600 hover:underline text-sm">Voir les saisies en attente</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Chantiers actifs</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ dashboard_data|length }}</p>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-full">
+                    <i class="fas fa-building text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">En attente validation</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ saisies.total }}</p>
+                </div>
+                <div class="bg-orange-100 p-3 rounded-full">
+                    <i class="fas fa-clock text-orange-600 text-xl"></i>
+                </div>
+            </div>
+            <a href="{{ url_for('validation.liste') }}" class="text-orange-600 hover:underline text-sm mt-2 block">Voir tout</a>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Budget Total</p>
+                    <p class="text-2xl font-bold text-gray-800">
+                        {% set total_budget = dashboard_data | map(attribute='kpi.budget') | sum %}
+                        {{ format_currency(total_budget) }}
+                    </p>
+                </div>
+                <div class="bg-green-100 p-3 rounded-full">
+                    <i class="fas fa-coins text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm">Alertes actives</p>
+                    <p class="text-3xl font-bold text-red-600">
+                        {% set total_alertes = dashboard_data | map(attribute='nb_alertes') | sum %}
+                        {{ total_alertes }}
+                    </p>
+                </div>
+                <div class="bg-red-100 p-3 rounded-full">
+                    <i class="fas fa-bell text-red-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800">Liste des Chantiers</h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chantier</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Budget</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Consommé</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taux</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Solde Avance</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alertes</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for item in dashboard_data %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900">{{ item.chantier.nom }}</div>
+                            <div class="text-sm text-gray-500">{{ item.chantier.adresse or 'Non renseignée' }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm">{{ format_currency(item.kpi.budget) }}</td>
+                        <td class="px-6 py-4 text-sm">{{ format_currency(item.kpi.cout_total) }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="h-2 rounded-full {% if item.kpi.taux_consommation > 80 %}bg-red-500{% elif item.kpi.taux_consommation > 60 %}bg-yellow-500{% else %}bg-green-500{% endif %}" style="width: {{ [item.kpi.taux_consommation, 100]|min }}%"></div>
+                                </div>
+                                <span class="text-sm">{{ format_percentage(item.kpi.taux_consommation) }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm {% if item.kpi.solde_avance < 10000 %}text-red-600 font-medium{% endif %}">
+                            {{ format_currency(item.kpi.solde_avance) }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if item.alertes %}
+                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                                {{ item.nb_alertes }} alerte(s)
+                            </span>
+                            {% else %}
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                OK
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="{{ url_for('chantiers.detail', id=item.chantier.id) }}" class="text-blue-600 hover:text-blue-800">
+                                <i class="fas fa-eye"></i> Détail
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                            <i class="fas fa-building text-4xl mb-2 block opacity-50"></i>
+                            Aucun chantier actif
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

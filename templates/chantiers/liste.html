@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Chantiers{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Chantiers</h1>
+            <p class="text-gray-500">{{ chantiers|length }} chantier(s)</p>
+        </div>
+        {% if session.get('user_role') == 'direction' %}
+        <a href="{{ url_for('chantiers.nouveau') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+            <i class="fas fa-plus"></i> Nouveau Chantier
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for chantier in chantiers %}
+        <a href="{{ url_for('chantiers.detail', id=chantier.id) }}" class="bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div class="bg-blue-100 p-3 rounded-lg">
+                    <i class="fas fa-building text-blue-600 text-xl"></i>
+                </div>
+                <span class="px-2 py-1 text-xs rounded-full {% if chantier.statut == 'en_cours' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ chantier.statut|replace('_', ' ')|title }}
+                </span>
+            </div>
+            <h3 class="font-semibold text-gray-900 mb-1">{{ chantier.nom }}</h3>
+            <p class="text-sm text-gray-500 mb-3">{{ chantier.adresse or 'Adresse non renseignée' }}</p>
+            <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-500">Budget:</span>
+                <span class="font-medium">{{ format_currency(chantier.budget_previsionnel) }}</span>
+            </div>
+        </a>
+        {% else %}
+        <div class="col-span-full bg-white rounded-xl shadow p-8 text-center">
+            <i class="fas fa-building text-gray-300 text-5xl mb-4"></i>
+            <p class="text-gray-500">Aucun chantier disponible</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

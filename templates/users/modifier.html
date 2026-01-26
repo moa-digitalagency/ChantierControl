@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifier Utilisateur{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('users.liste') }}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-1"></i> Retour à la liste
+        </a>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Modifier Utilisateur</h1>
+        
+        <form method="POST" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
+                    <input type="text" name="prenom" required value="{{ user.prenom }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
+                    <input type="text" name="nom" required value="{{ user.nom }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de téléphone *</label>
+                <input type="tel" name="telephone" required value="{{ user.telephone }}"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       pattern="[0-9]{10}">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Nouveau code PIN (laisser vide pour ne pas changer)
+                </label>
+                <input type="password" name="pin" maxlength="4" minlength="4"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       pattern="[0-9]{4}"
+                       inputmode="numeric"
+                       placeholder="••••">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Rôle *</label>
+                <select name="role" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="direction" {% if user.role == 'direction' %}selected{% endif %}>Direction</option>
+                    <option value="chef_chantier" {% if user.role == 'chef_chantier' %}selected{% endif %}>Chef de Chantier</option>
+                    <option value="responsable_achats" {% if user.role == 'responsable_achats' %}selected{% endif %}>Responsable Achats</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center">
+                <input type="checkbox" name="actif" id="actif" class="w-4 h-4 text-blue-600 rounded" {% if user.actif %}checked{% endif %}>
+                <label for="actif" class="ml-2 text-sm text-gray-700">Utilisateur actif</label>
+            </div>
+            
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-save mr-2"></i> Enregistrer
+                </button>
+                <a href="{{ url_for('users.liste') }}" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

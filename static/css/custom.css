@@ -1,0 +1,19 @@
+/* Custom styles for Gestion Chantiers */
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 640px) {
+    .mobile-full {
+        width: 100%;
+    }
+}
+
+/* Print styles for reports */
+@media print {
+    nav, .no-print {
+        display: none !important;
+    }
+    
+    body {
+        font-size: 12pt;
+    }
+}

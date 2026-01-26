@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ chantier.nom }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+        <div>
+            <a href="{{ url_for('chantiers.liste') }}" class="text-blue-600 hover:text-blue-800 text-sm mb-2 inline-block">
+                <i class="fas fa-arrow-left mr-1"></i> Retour
+            </a>
+            <h1 class="text-2xl font-bold text-gray-800">{{ chantier.nom }}</h1>
+            <p class="text-gray-500">{{ chantier.adresse or 'Adresse non renseignée' }}</p>
+        </div>
+        {% if role == 'direction' %}
+        <a href="{{ url_for('chantiers.assigner', id=chantier.id) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+            <i class="fas fa-user-plus"></i> Assigner utilisateur
+        </a>
+        {% endif %}
+    </div>
+    
+    {% if alertes %}
+    <div class="space-y-2">
+        {% for alerte in alertes %}
+        <div class="{% if alerte.niveau == 'danger' %}bg-red-100 border-red-500 text-red-800{% else %}bg-yellow-100 border-yellow-500 text-yellow-800{% endif %} border-l-4 p-4 rounded-r-lg">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>{{ alerte.message }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-gray-500 text-sm mb-1">Budget</p>
+            <p class="text-2xl font-bold text-gray-800">{{ format_currency(kpi.budget) }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-gray-500 text-sm mb-1">Coût Total</p>
+            <p class="text-2xl font-bold text-blue-600">{{ format_currency(kpi.cout_total) }}</p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-gray-500 text-sm mb-1">Taux Consommation</p>
+            <p class="text-2xl font-bold {% if kpi.taux_consommation > 80 %}text-red-600{% elif kpi.taux_consommation > 60 %}text-yellow-600{% else %}text-green-600{% endif %}">
+                {{ format_percentage(kpi.taux_consommation) }}
+            </p>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <p class="text-gray-500 text-sm mb-1">IPC</p>
+            <p class="text-2xl font-bold {% if kpi.ipc >= 1 %}text-green-600{% else %}text-red-600{% endif %}">
+                {{ "%.2f"|format(kpi.ipc) }}
+            </p>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Répartition des coûts</h3>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Achats</span>
+                        <span class="font-medium">{{ format_currency(kpi.total_achats) }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-blue-500 h-3 rounded-full" style="width: {{ (kpi.total_achats / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Salaires</span>
+                        <span class="font-medium">{{ format_currency(kpi.total_salaires) }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-green-500 h-3 rounded-full" style="width: {{ (kpi.total_salaires / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-600">Transport</span>
+                        <span class="font-medium">{{ format_currency(kpi.total_transport) }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-purple-500 h-3 rounded-full" style="width: {{ (kpi.total_transport / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+            </div>
+            <canvas id="repartitionChart" class="mt-4" height="200"></canvas>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Trésorerie</h3>
+            <div class="space-y-4 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Avances reçues</span>
+                    <span class="font-medium text-green-600">{{ format_currency(kpi.total_avances) }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Dépenses totales</span>
+                    <span class="font-medium text-red-600">{{ format_currency(kpi.cout_total) }}</span>
+                </div>
+                <hr>
+                <div class="flex justify-between">
+                    <span class="font-medium">Solde avance</span>
+                    <span class="font-bold {% if kpi.solde_avance < 0 %}text-red-600{% elif kpi.solde_avance < 10000 %}text-yellow-600{% else %}text-green-600{% endif %}">
+                        {{ format_currency(kpi.solde_avance) }}
+                    </span>
+                </div>
+            </div>
+            <canvas id="tresorerieChart" height="200"></canvas>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">5 derniers achats</h3>
+            {% if derniers_achats %}
+            <div class="space-y-3">
+                {% for achat in derniers_achats %}
+                <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                    {% if achat.photo_justificatif %}
+                    <img src="{{ url_for('static', filename='uploads/' + achat.photo_justificatif) }}" 
+                         alt="Justificatif" class="w-16 h-16 object-cover rounded">
+                    {% else %}
+                    <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                        <i class="fas fa-receipt text-gray-400"></i>
+                    </div>
+                    {% endif %}
+                    <div class="flex-1">
+                        <p class="font-medium">{{ achat.fournisseur }}</p>
+                        <p class="text-sm text-gray-500">{{ achat.date_achat.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                    <span class="font-medium">{{ format_currency(achat.montant) }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-4">Aucun achat validé</p>
+            {% endif %}
+        </div>
+        
+        <div class="bg-white rounded-xl shadow p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Utilisateurs assignés</h3>
+            {% if users_assignes %}
+            <div class="space-y-2">
+                {% for assignment in users_assignes %}
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">{{ assignment.user.prenom }} {{ assignment.user.nom }}</p>
+                            <p class="text-sm text-gray-500">{{ assignment.user.role|replace('_', ' ')|title }}</p>
+                        </div>
+                    </div>
+                    {% if role == 'direction' %}
+                    <form method="POST" action="{{ url_for('chantiers.desassigner', id=chantier.id, user_id=assignment.user.id) }}">
+                        <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Retirer cet utilisateur?')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-4">Aucun utilisateur assigné</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+new Chart(document.getElementById('repartitionChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Achats', 'Salaires', 'Transport'],
+        datasets: [{
+            data: [{{ kpi.total_achats }}, {{ kpi.total_salaires }}, {{ kpi.total_transport }}],
+            backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+
+new Chart(document.getElementById('tresorerieChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Budget', 'Avances', 'Dépenses'],
+        datasets: [{
+            data: [{{ kpi.budget }}, {{ kpi.total_avances }}, {{ kpi.cout_total }}],
+            backgroundColor: ['#6B7280', '#10B981', '#EF4444']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+</script>
+{% endblock %}
