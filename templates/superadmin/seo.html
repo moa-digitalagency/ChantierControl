@@ -1,92 +1,171 @@
-{% extends 'base.html' %}
-{% block title %}SEO - Super Admin{% endblock %}
+{% extends 'superadmin/base_superadmin.html' %}
+{% block title %}SEO{% endblock %}
+{% block page_title %}Paramètres SEO{% endblock %}
+{% block page_subtitle %}Optimisation pour les moteurs de recherche{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-green-800">
-        <i class="fas fa-search mr-2"></i> Paramètres SEO
-    </h1>
-    <p class="text-gray-600">Optimisation pour les moteurs de recherche</p>
-</div>
-
 <form method="POST" class="space-y-6">
-    <div class="bg-white rounded-lg shadow">
-        <div class="border-b px-6 py-4">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-tags mr-2 text-blue-600"></i> Meta Tags
-            </h2>
+    <div class="grid lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-tags text-blue-600 text-sm"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Meta Tags</h3>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Meta Title</label>
+                            <span class="text-xs text-gray-400">{{ (settings.meta_title|length) if settings.meta_title else 0 }}/60</span>
+                        </div>
+                        <input type="text" name="meta_title" value="{{ settings.meta_title }}" maxlength="60"
+                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                        <p class="text-xs text-gray-500 mt-2">Titre affiché dans les résultats de recherche Google.</p>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Meta Description</label>
+                            <span class="text-xs text-gray-400">{{ (settings.meta_description|length) if settings.meta_description else 0 }}/160</span>
+                        </div>
+                        <textarea name="meta_description" rows="3" maxlength="160"
+                                  class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all resize-none">{{ settings.meta_description }}</textarea>
+                        <p class="text-xs text-gray-500 mt-2">Description affichée sous le titre dans les résultats Google.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Meta Keywords</label>
+                        <input type="text" name="meta_keywords" value="{{ settings.meta_keywords }}"
+                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all"
+                               placeholder="chantier, gestion, construction, BTP">
+                        <p class="text-xs text-gray-500 mt-2">Mots-clés séparés par des virgules.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <i class="fab fa-facebook text-indigo-600 text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Open Graph</h3>
+                        <p class="text-xs text-gray-500">Partage sur les réseaux sociaux</p>
+                    </div>
+                </div>
+                <div class="p-6 grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">OG Title</label>
+                        <input type="text" name="og_title" value="{{ settings.og_title }}"
+                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">OG Image URL</label>
+                        <input type="url" name="og_image" value="{{ settings.og_image }}"
+                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all"
+                               placeholder="https://example.com/image.jpg">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">OG Description</label>
+                        <textarea name="og_description" rows="2"
+                                  class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all resize-none">{{ settings.og_description }}</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-orange-600 text-sm"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Analytics & Robots</h3>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Google Analytics ID</label>
+                        <div class="relative">
+                            <i class="fab fa-google absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" name="google_analytics" value="{{ settings.google_analytics }}" placeholder="G-XXXXXXXXXX"
+                                   class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Robots.txt personnalisé</label>
+                        <textarea name="robots_txt" rows="5" placeholder="User-agent: *&#10;Allow: /"
+                                  class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all font-mono text-sm resize-none">{{ settings.robots_txt }}</textarea>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="p-6 space-y-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Meta Title</label>
-                <input type="text" name="meta_title" value="{{ settings.meta_title }}" maxlength="60"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <p class="text-xs text-gray-500 mt-1">Max 60 caractères. Titre affiché dans les résultats Google.</p>
+        
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-save text-green-600 text-sm"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Enregistrement</h3>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-gray-500 mb-4">Sauvegardez vos modifications SEO.</p>
+                    <button type="submit" class="w-full px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-xl shadow-lg shadow-green-500/30 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i>
+                        Enregistrer
+                    </button>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Meta Description</label>
-                <textarea name="meta_description" rows="2" maxlength="160"
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">{{ settings.meta_description }}</textarea>
-                <p class="text-xs text-gray-500 mt-1">Max 160 caractères. Description affichée dans les résultats Google.</p>
+            
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-eye text-purple-600 text-sm"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Aperçu Google</h3>
+                </div>
+                <div class="p-6">
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p class="text-blue-700 text-lg hover:underline cursor-pointer truncate">
+                            {{ settings.meta_title or 'Titre de votre page' }}
+                        </p>
+                        <p class="text-green-700 text-sm truncate">
+                            example.com/votre-page
+                        </p>
+                        <p class="text-gray-600 text-sm mt-1 line-clamp-2">
+                            {{ settings.meta_description or 'Description de votre page qui apparaîtra dans les résultats de recherche...' }}
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Meta Keywords</label>
-                <input type="text" name="meta_keywords" value="{{ settings.meta_keywords }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-                <p class="text-xs text-gray-500 mt-1">Mots-clés séparés par des virgules</p>
+            
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl border border-blue-200 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-info text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-blue-900 mb-1">Bonnes pratiques</h4>
+                        <ul class="text-sm text-blue-700 space-y-1">
+                            <li>- Title: 50-60 caractères max</li>
+                            <li>- Description: 150-160 caractères</li>
+                            <li>- Image OG: 1200x630 pixels</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
+            
+            <a href="{{ url_for('superadmin.parametres') }}" class="block bg-white rounded-2xl card-shadow border border-gray-100 p-6 hover:border-primary-200 hover:shadow-lg transition-all group">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="fas fa-sliders-h text-gray-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900">Paramètres</h4>
+                        <p class="text-sm text-gray-500">Configuration générale</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-400 ml-auto group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
         </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow">
-        <div class="border-b px-6 py-4">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <i class="fab fa-facebook mr-2 text-blue-600"></i> Open Graph (Réseaux Sociaux)
-            </h2>
-        </div>
-        <div class="p-6 grid md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">OG Title</label>
-                <input type="text" name="og_title" value="{{ settings.og_title }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">OG Image URL</label>
-                <input type="url" name="og_image" value="{{ settings.og_image }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-            </div>
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">OG Description</label>
-                <textarea name="og_description" rows="2"
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">{{ settings.og_description }}</textarea>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow">
-        <div class="border-b px-6 py-4">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-chart-line mr-2 text-orange-600"></i> Analytics & Robots
-            </h2>
-        </div>
-        <div class="p-6 space-y-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Google Analytics ID</label>
-                <input type="text" name="google_analytics" value="{{ settings.google_analytics }}" placeholder="G-XXXXXXXXXX"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Robots.txt personnalisé</label>
-                <textarea name="robots_txt" rows="4" placeholder="User-agent: *&#10;Allow: /"
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 font-mono text-sm">{{ settings.robots_txt }}</textarea>
-            </div>
-        </div>
-    </div>
-    
-    <div class="flex justify-end">
-        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">
-            <i class="fas fa-save mr-2"></i> Enregistrer
-        </button>
     </div>
 </form>
 {% endblock %}

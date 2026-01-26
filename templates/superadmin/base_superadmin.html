@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+    <title>{% block title %}Super Admin{% endblock %} - Gestion Chantiers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.2) 0%, transparent 100%);
+            border-left: 3px solid #8b5cf6;
+        }
+        .sidebar-link:hover:not(.active) {
+            background: rgba(139, 92, 246, 0.1);
+        }
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .card-shadow-lg {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <aside id="sidebar" class="sidebar fixed md:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out">
+            <div class="flex flex-col h-full">
+                <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-hard-hat text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-gray-900">Gestion Chantiers</h1>
+                        <span class="text-xs text-primary-600 font-medium">Super Admin</span>
+                    </div>
+                </div>
+                
+                <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                    <div class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Principal
+                    </div>
+                    <a href="{{ url_for('superadmin.index') }}" 
+                       class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if request.endpoint == 'superadmin.index' %}active{% endif %}">
+                        <i class="fas fa-chart-pie w-5 text-center text-primary-500"></i>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                    
+                    <div class="px-3 py-2 mt-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Gestion
+                    </div>
+                    <a href="{{ url_for('superadmin.liste_entreprises') }}" 
+                       class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if 'entreprise' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-building w-5 text-center text-blue-500"></i>
+                        <span class="font-medium">Entreprises</span>
+                    </a>
+                    <a href="{{ url_for('superadmin.liste_admins') }}" 
+                       class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if 'admin' in request.endpoint %}active{% endif %}">
+                        <i class="fas fa-user-shield w-5 text-center text-green-500"></i>
+                        <span class="font-medium">Administrateurs</span>
+                    </a>
+                    
+                    <div class="px-3 py-2 mt-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Configuration
+                    </div>
+                    <a href="{{ url_for('superadmin.parametres') }}" 
+                       class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if request.endpoint == 'superadmin.parametres' %}active{% endif %}">
+                        <i class="fas fa-cog w-5 text-center text-gray-500"></i>
+                        <span class="font-medium">Paramètres</span>
+                    </a>
+                    <a href="{{ url_for('superadmin.seo') }}" 
+                       class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if request.endpoint == 'superadmin.seo' %}active{% endif %}">
+                        <i class="fas fa-search w-5 text-center text-orange-500"></i>
+                        <span class="font-medium">SEO</span>
+                    </a>
+                </nav>
+                
+                <div class="p-4 border-t border-gray-100">
+                    <div class="flex items-center gap-3 px-3 py-2">
+                        <div class="w-9 h-9 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
+                            <span class="text-white font-semibold text-sm">
+                                {{ session.get('user_prenom', 'S')[0] }}{{ session.get('user_nom', 'A')[0] }}
+                            </span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">
+                                {{ session.get('user_prenom', '') }} {{ session.get('user_nom', '') }}
+                            </p>
+                            <p class="text-xs text-gray-500 truncate">Super Administrateur</p>
+                        </div>
+                        <a href="{{ url_for('auth.logout') }}" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Déconnexion">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <div id="overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+        
+        <main class="flex-1 min-w-0">
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+                <div class="flex items-center justify-between px-4 md:px-6 py-4">
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleSidebar()" class="md:hidden p-2 -ml-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
+                            <i class="fas fa-bars text-lg"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h2>
+                            <p class="text-sm text-gray-500 hidden sm:block">{% block page_subtitle %}Vue d'ensemble de la plateforme{% endblock %}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg relative">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        <div class="hidden sm:block h-8 w-px bg-gray-200"></div>
+                        <span class="hidden sm:block text-sm text-gray-500">
+                            <i class="far fa-calendar-alt mr-1"></i>
+                            {{ now().strftime('%d %b %Y') if now is defined else '' }}
+                        </span>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="p-4 md:p-6 lg:p-8">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="mb-4 flex items-center gap-3 p-4 rounded-xl {% if category == 'error' %}bg-red-50 text-red-800 border border-red-200{% elif category == 'success' %}bg-green-50 text-green-800 border border-green-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                            <i class="fas {% if category == 'error' %}fa-exclamation-circle{% elif category == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('hidden');
+        }
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

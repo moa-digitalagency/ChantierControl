@@ -1,163 +1,210 @@
-{% extends 'base.html' %}
-{% block title %}Super Admin - Dashboard{% endblock %}
+{% extends 'superadmin/base_superadmin.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Vue d'ensemble de la plateforme{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-purple-800">
-        <i class="fas fa-tachometer-alt mr-2"></i> Tableau de Bord Global
-    </h1>
-    <p class="text-gray-600">Vue d'ensemble de toutes les entreprises</p>
-</div>
-
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+    <div class="bg-white rounded-2xl card-shadow p-5 border border-gray-100">
+        <div class="flex items-start justify-between">
             <div>
-                <p class="text-gray-500 text-sm">Entreprises</p>
-                <p class="text-2xl font-bold text-purple-600">{{ stats.nb_entreprises }}</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">Entreprises</p>
+                <p class="text-3xl font-bold text-gray-900">{{ stats.nb_entreprises }}</p>
+                <p class="text-xs text-gray-400 mt-2">
+                    <span class="inline-flex items-center text-green-600">
+                        <i class="fas fa-circle text-[6px] mr-1"></i>
+                        {{ stats.nb_entreprises_actives }} actives
+                    </span>
+                </p>
             </div>
-            <div class="bg-purple-100 p-3 rounded-full">
-                <i class="fas fa-building text-purple-600"></i>
-            </div>
-        </div>
-        <p class="text-xs text-gray-400 mt-2">{{ stats.nb_entreprises_actives }} actives</p>
-    </div>
-    
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm">Administrateurs</p>
-                <p class="text-2xl font-bold text-indigo-600">{{ stats.nb_admins }}</p>
-            </div>
-            <div class="bg-indigo-100 p-3 rounded-full">
-                <i class="fas fa-user-shield text-indigo-600"></i>
+            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30">
+                <i class="fas fa-building text-white"></i>
             </div>
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between">
+    <div class="bg-white rounded-2xl card-shadow p-5 border border-gray-100">
+        <div class="flex items-start justify-between">
             <div>
-                <p class="text-gray-500 text-sm">Utilisateurs</p>
-                <p class="text-2xl font-bold text-blue-600">{{ stats.nb_users }}</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">Administrateurs</p>
+                <p class="text-3xl font-bold text-gray-900">{{ stats.nb_admins }}</p>
+                <p class="text-xs text-gray-400 mt-2">
+                    <span class="inline-flex items-center text-blue-600">
+                        <i class="fas fa-shield-alt text-[8px] mr-1"></i>
+                        Admins actifs
+                    </span>
+                </p>
             </div>
-            <div class="bg-blue-100 p-3 rounded-full">
-                <i class="fas fa-users text-blue-600"></i>
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <i class="fas fa-user-shield text-white"></i>
             </div>
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between">
+    <div class="bg-white rounded-2xl card-shadow p-5 border border-gray-100">
+        <div class="flex items-start justify-between">
             <div>
-                <p class="text-gray-500 text-sm">Chantiers</p>
-                <p class="text-2xl font-bold text-green-600">{{ stats.nb_chantiers }}</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">Utilisateurs</p>
+                <p class="text-3xl font-bold text-gray-900">{{ stats.nb_users }}</p>
+                <p class="text-xs text-gray-400 mt-2">
+                    <span class="inline-flex items-center text-indigo-600">
+                        <i class="fas fa-users text-[8px] mr-1"></i>
+                        Tous rôles
+                    </span>
+                </p>
             </div>
-            <div class="bg-green-100 p-3 rounded-full">
-                <i class="fas fa-hard-hat text-green-600"></i>
-            </div>
-        </div>
-        <p class="text-xs text-gray-400 mt-2">{{ stats.nb_chantiers_en_cours }} en cours</p>
-    </div>
-</div>
-
-<div class="grid md:grid-cols-2 gap-6 mb-6">
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <p class="text-gray-500 text-sm">Total Dépenses</p>
-                <p class="text-2xl font-bold text-red-600">{{ format_currency(stats.total_depenses) }}</p>
-            </div>
-            <div class="bg-red-100 p-3 rounded-full">
-                <i class="fas fa-credit-card text-red-600"></i>
+            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <i class="fas fa-users text-white"></i>
             </div>
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between mb-4">
+    <div class="bg-white rounded-2xl card-shadow p-5 border border-gray-100">
+        <div class="flex items-start justify-between">
             <div>
-                <p class="text-gray-500 text-sm">Total Avances</p>
-                <p class="text-2xl font-bold text-yellow-600">{{ format_currency(stats.total_avances) }}</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">Chantiers</p>
+                <p class="text-3xl font-bold text-gray-900">{{ stats.nb_chantiers }}</p>
+                <p class="text-xs text-gray-400 mt-2">
+                    <span class="inline-flex items-center text-emerald-600">
+                        <i class="fas fa-hard-hat text-[8px] mr-1"></i>
+                        {{ stats.nb_chantiers_en_cours }} en cours
+                    </span>
+                </p>
             </div>
-            <div class="bg-yellow-100 p-3 rounded-full">
-                <i class="fas fa-money-bill-wave text-yellow-600"></i>
+            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <i class="fas fa-hard-hat text-white"></i>
             </div>
         </div>
     </div>
 </div>
 
-<div class="grid md:grid-cols-2 gap-6">
-    <div class="bg-white rounded-lg shadow">
-        <div class="border-b px-6 py-4 flex justify-between items-center">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-building mr-2 text-purple-600"></i> Entreprises Récentes
-            </h2>
-            <a href="{{ url_for('superadmin.liste_entreprises') }}" class="text-purple-600 hover:text-purple-800 text-sm">
-                Voir tout <i class="fas fa-arrow-right ml-1"></i>
-            </a>
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-credit-card text-red-600 text-sm"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900">Total Dépenses</h3>
+            </div>
         </div>
         <div class="p-6">
+            <p class="text-4xl font-bold text-gray-900 mb-2">{{ format_currency(stats.total_depenses) }}</p>
+            <p class="text-sm text-gray-500">Toutes entreprises confondues</p>
+            <div class="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full" style="width: 65%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-money-bill-wave text-amber-600 text-sm"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900">Total Avances</h3>
+            </div>
+        </div>
+        <div class="p-6">
+            <p class="text-4xl font-bold text-gray-900 mb-2">{{ format_currency(stats.total_avances) }}</p>
+            <p class="text-sm text-gray-500">Avances versées aux équipes</p>
+            <div class="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full" style="width: 45%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-building text-purple-600 text-sm"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900">Entreprises Récentes</h3>
+            </div>
+            <a href="{{ url_for('superadmin.liste_entreprises') }}" class="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                Voir tout <i class="fas fa-arrow-right text-xs"></i>
+            </a>
+        </div>
+        <div class="divide-y divide-gray-100">
             {% if entreprises_recentes %}
-            <div class="space-y-3">
                 {% for e in entreprises_recentes %}
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div>
-                        <p class="font-medium">{{ e.nom }}</p>
-                        <p class="text-sm text-gray-500">
-                            {% if e.admin_principal %}
-                            Admin: {{ e.admin_principal.prenom }} {{ e.admin_principal.nom }}
-                            {% else %}
-                            Pas d'admin principal
-                            {% endif %}
-                        </p>
+                <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-building text-gray-500"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-900">{{ e.nom }}</p>
+                            <p class="text-sm text-gray-500">
+                                {% if e.admin_principal %}
+                                    <i class="fas fa-user-shield text-xs mr-1"></i>
+                                    {{ e.admin_principal.prenom }} {{ e.admin_principal.nom }}
+                                {% else %}
+                                    <span class="text-amber-600"><i class="fas fa-exclamation-triangle text-xs mr-1"></i> Pas d'admin</span>
+                                {% endif %}
+                            </p>
+                        </div>
                     </div>
-                    <span class="px-2 py-1 text-xs rounded-full {% if e.actif %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    <span class="px-3 py-1 text-xs font-medium rounded-full {% if e.actif %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
                         {{ 'Actif' if e.actif else 'Inactif' }}
                     </span>
                 </div>
                 {% endfor %}
-            </div>
             {% else %}
-            <p class="text-gray-500 text-center py-4">Aucune entreprise créée</p>
+                <div class="px-6 py-12 text-center">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-building text-gray-400 text-2xl"></i>
+                    </div>
+                    <p class="text-gray-500">Aucune entreprise créée</p>
+                    <a href="{{ url_for('superadmin.nouvelle_entreprise') }}" class="mt-4 inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium">
+                        <i class="fas fa-plus"></i> Créer une entreprise
+                    </a>
+                </div>
             {% endif %}
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow">
-        <div class="border-b px-6 py-4">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-cogs mr-2 text-gray-600"></i> Actions Rapides
-            </h2>
+    <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-bolt text-gray-600 text-sm"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900">Actions Rapides</h3>
+            </div>
         </div>
-        <div class="p-6 space-y-3">
-            <a href="{{ url_for('superadmin.nouvelle_entreprise') }}" class="flex items-center p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition">
-                <div class="bg-purple-600 p-2 rounded-lg mr-3">
+        <div class="p-4 space-y-3">
+            <a href="{{ url_for('superadmin.nouvelle_entreprise') }}" class="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-purple-100/50 hover:from-purple-100 hover:to-purple-100 border border-purple-100 transition-all group">
+                <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
                     <i class="fas fa-plus text-white"></i>
                 </div>
                 <div>
-                    <p class="font-medium text-purple-800">Nouvelle Entreprise</p>
-                    <p class="text-sm text-purple-600">Créer une entreprise avec son admin</p>
+                    <p class="font-semibold text-gray-900">Nouvelle Entreprise</p>
+                    <p class="text-sm text-gray-500">Ajouter avec son admin</p>
                 </div>
             </a>
             
-            <a href="{{ url_for('superadmin.parametres') }}" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
-                <div class="bg-gray-600 p-2 rounded-lg mr-3">
+            <a href="{{ url_for('superadmin.parametres') }}" class="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100/50 hover:from-gray-100 hover:to-gray-100 border border-gray-200 transition-all group">
+                <div class="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center shadow-lg shadow-gray-500/20 group-hover:scale-110 transition-transform">
                     <i class="fas fa-sliders-h text-white"></i>
                 </div>
                 <div>
-                    <p class="font-medium text-gray-800">Paramètres</p>
-                    <p class="text-sm text-gray-600">Configuration de l'application</p>
+                    <p class="font-semibold text-gray-900">Paramètres</p>
+                    <p class="text-sm text-gray-500">Configuration globale</p>
                 </div>
             </a>
             
-            <a href="{{ url_for('superadmin.seo') }}" class="flex items-center p-3 bg-green-50 hover:bg-green-100 rounded-lg transition">
-                <div class="bg-green-600 p-2 rounded-lg mr-3">
+            <a href="{{ url_for('superadmin.seo') }}" class="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-100/50 hover:from-green-100 hover:to-emerald-100 border border-green-100 transition-all group">
+                <div class="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform">
                     <i class="fas fa-search text-white"></i>
                 </div>
                 <div>
-                    <p class="font-medium text-green-800">Paramètres SEO</p>
-                    <p class="text-sm text-green-600">Optimisation moteurs de recherche</p>
+                    <p class="font-semibold text-gray-900">Paramètres SEO</p>
+                    <p class="text-sm text-gray-500">Référencement web</p>
                 </div>
             </a>
         </div>

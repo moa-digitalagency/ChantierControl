@@ -1,110 +1,188 @@
-{% extends 'base.html' %}
-{% block title %}{% if entreprise %}Modifier{% else %}Nouvelle{% endif %} Entreprise - Super Admin{% endblock %}
+{% extends 'superadmin/base_superadmin.html' %}
+{% block title %}{% if entreprise %}Modifier{% else %}Nouvelle{% endif %} Entreprise{% endblock %}
+{% block page_title %}{% if entreprise %}Modifier l'entreprise{% else %}Nouvelle Entreprise{% endif %}{% endblock %}
+{% block page_subtitle %}{% if entreprise %}Modifiez les informations de {{ entreprise.nom }}{% else %}Créez une nouvelle entreprise avec son administrateur{% endif %}{% endblock %}
 
 {% block content %}
 <div class="mb-6">
-    <a href="{{ url_for('superadmin.liste_entreprises') }}" class="text-purple-600 hover:text-purple-800">
-        <i class="fas fa-arrow-left mr-1"></i> Retour aux entreprises
+    <a href="{{ url_for('superadmin.liste_entreprises') }}" class="inline-flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-colors">
+        <i class="fas fa-arrow-left"></i>
+        <span>Retour aux entreprises</span>
     </a>
-    <h1 class="text-2xl font-bold text-purple-800 mt-2">
-        <i class="fas fa-building mr-2"></i> 
-        {% if entreprise %}Modifier l'entreprise{% else %}Nouvelle Entreprise{% endif %}
-    </h1>
 </div>
 
 <form method="POST" class="space-y-6">
-    <div class="bg-white rounded-lg shadow">
-        <div class="border-b px-6 py-4">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-info-circle mr-2 text-purple-600"></i> Informations de l'Entreprise
-            </h2>
-        </div>
-        <div class="p-6 grid md:grid-cols-2 gap-6">
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise *</label>
-                <input type="text" name="nom" value="{{ entreprise.nom if entreprise else '' }}" required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+    <div class="grid lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-building text-purple-600 text-sm"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Informations de l'Entreprise</h3>
+                </div>
+                <div class="p-6 grid md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Nom de l'entreprise <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nom" value="{{ entreprise.nom if entreprise else '' }}" required
+                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                        <div class="relative">
+                            <i class="fas fa-map-marker-alt absolute left-4 top-3 text-gray-400"></i>
+                            <input type="text" name="adresse" value="{{ entreprise.adresse if entreprise else '' }}"
+                                   class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
+                        <div class="relative">
+                            <i class="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="tel" name="telephone" value="{{ entreprise.telephone if entreprise else '' }}"
+                                   class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="email" name="email" value="{{ entreprise.email if entreprise else '' }}"
+                                   class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                        </div>
+                    </div>
+                    {% if entreprise %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Admin Principal</label>
+                        <select name="admin_principal_id" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                            <option value="">-- Sélectionner --</option>
+                            {% for admin in admins %}
+                            <option value="{{ admin.id }}" {% if entreprise.admin_principal_id == admin.id %}selected{% endif %}>
+                                {{ admin.prenom }} {{ admin.nom }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="actif" {% if entreprise.actif %}checked{% endif %} class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            <span class="ml-3 text-sm font-medium text-gray-700">Entreprise active</span>
+                        </label>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
-                <input type="text" name="adresse" value="{{ entreprise.adresse if entreprise else '' }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                <input type="tel" name="telephone" value="{{ entreprise.telephone if entreprise else '' }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <input type="email" name="email" value="{{ entreprise.email if entreprise else '' }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-            </div>
-            {% if entreprise %}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Admin Principal</label>
-                <select name="admin_principal_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                    <option value="">-- Sélectionner --</option>
-                    {% for admin in admins %}
-                    <option value="{{ admin.id }}" {% if entreprise.admin_principal_id == admin.id %}selected{% endif %}>
-                        {{ admin.prenom }} {{ admin.nom }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="flex items-center">
-                <label class="flex items-center">
-                    <input type="checkbox" name="actif" {% if entreprise.actif %}checked{% endif %}
-                           class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                    <span class="ml-2 text-sm text-gray-700">Entreprise active</span>
-                </label>
+            
+            {% if not entreprise %}
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user-shield text-blue-600 text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">Administrateur Principal</h3>
+                        <p class="text-xs text-gray-500">Ce compte gérera l'entreprise</p>
+                    </div>
+                </div>
+                <div class="p-6 grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Prénom <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="admin_prenom" required
+                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Nom <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="admin_nom" required
+                               class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Téléphone <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="tel" name="admin_telephone" required pattern="[0-9]{10}"
+                                   class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all"
+                                   placeholder="06XXXXXXXX">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Code PIN <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                            <input type="password" name="admin_pin" required pattern="[0-9]{4}" maxlength="4"
+                                   class="w-full pl-11 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all"
+                                   placeholder="4 chiffres">
+                        </div>
+                    </div>
+                </div>
             </div>
             {% endif %}
         </div>
-    </div>
-    
-    {% if not entreprise %}
-    <div class="bg-white rounded-lg shadow">
-        <div class="border-b px-6 py-4">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-user-shield mr-2 text-indigo-600"></i> Administrateur Principal
-            </h2>
-            <p class="text-sm text-gray-500">Créez l'administrateur qui gèrera cette entreprise</p>
+        
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-save text-green-600 text-sm"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Actions</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <button type="submit" class="w-full px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-medium rounded-xl shadow-lg shadow-primary-500/30 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i>
+                        {% if entreprise %}Mettre à jour{% else %}Créer l'entreprise{% endif %}
+                    </button>
+                    <a href="{{ url_for('superadmin.liste_entreprises') }}" class="w-full px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </a>
+                </div>
+            </div>
+            
+            {% if not entreprise %}
+            <div class="bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl border border-amber-200 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-lightbulb text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-amber-900 mb-1">Note</h4>
+                        <p class="text-sm text-amber-700">L'administrateur principal pourra créer d'autres utilisateurs pour son entreprise après connexion.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if entreprise %}
+            <div class="bg-white rounded-2xl card-shadow border border-gray-100 p-6">
+                <h4 class="font-semibold text-gray-900 mb-4">Statistiques</h4>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span class="text-gray-500">Utilisateurs</span>
+                        <span class="font-semibold text-gray-900">{{ entreprise.users.count() }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span class="text-gray-500">Chantiers</span>
+                        <span class="font-semibold text-gray-900">{{ entreprise.chantiers.count() }}</span>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-gray-500">Créée le</span>
+                        <span class="font-semibold text-gray-900">{{ entreprise.created_at.strftime('%d/%m/%Y') if entreprise.created_at else '-' }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        <div class="p-6 grid md:grid-cols-2 gap-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
-                <input type="text" name="admin_prenom" required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
-                <input type="text" name="admin_nom" required
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
-                <input type="tel" name="admin_telephone" required pattern="[0-9]{10}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                       placeholder="06XXXXXXXX">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Code PIN (4 chiffres) *</label>
-                <input type="password" name="admin_pin" required pattern="[0-9]{4}" maxlength="4"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                       placeholder="****">
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    
-    <div class="flex justify-end gap-4">
-        <a href="{{ url_for('superadmin.liste_entreprises') }}" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-            Annuler
-        </a>
-        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">
-            <i class="fas fa-save mr-2"></i> {% if entreprise %}Mettre à jour{% else %}Créer l'entreprise{% endif %}
-        </button>
     </div>
 </form>
 {% endblock %}

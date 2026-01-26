@@ -69,7 +69,22 @@ Le compte Super Admin est créé via variables d'environnement au premier lancem
 - Consommation budget > 80%
 - Saisies en attente > 24h
 
+## Design UI Super Admin
+Le module Super Admin utilise un design moderne avec:
+- Menu de navigation latéral (sidebar) fixe à gauche
+- Template de base dédié: `templates/superadmin/base_superadmin.html`
+- Couleurs primary (violet/purple) avec gradients
+- Cards avec ombres douces et coins arrondis (2xl)
+- Composants interactifs avec animations hover
+- Design responsive avec sidebar escamotable sur mobile
+
 ## Recent Changes
+- 26/01/2026: Refonte design Super Admin
+  - Nouveau layout avec sidebar navigation
+  - Design moderne avec Tailwind (cards, gradients, shadows)
+  - Couleurs primary personnalisées (violet)
+  - Templates mis à jour: dashboard, entreprises, admins, parametres, seo, entreprise_form
+  
 - 26/01/2026: Passage en mode SaaS multi-entreprises
   - Ajout modèle Entreprise
   - Création rôles super_admin et admin
