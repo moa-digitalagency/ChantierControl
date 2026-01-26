@@ -16,6 +16,17 @@ def get_user_chantiers(user_id, role):
     ).all()
     return [a.chantier for a in assignments]
 
+def user_has_access_to_chantier(user_id, role, chantier_id):
+    if role == 'direction':
+        return True
+    
+    assignment = ChantierAssignment.query.filter_by(
+        user_id=user_id,
+        chantier_id=chantier_id,
+        actif=True
+    ).first()
+    return assignment is not None
+
 @saisies_bp.route('/achat', methods=['GET', 'POST'])
 @login_required
 def nouvel_achat():
@@ -25,21 +36,38 @@ def nouvel_achat():
     
     if request.method == 'POST':
         chantier_id = request.form.get('chantier_id')
-        montant = float(request.form.get('montant', 0))
+        
+        if not user_has_access_to_chantier(user.id, role, chantier_id):
+            flash('Accès non autorisé à ce chantier', 'danger')
+            return redirect(url_for('dashboard.index'))
+        
+        try:
+            montant = float(request.form.get('montant', 0))
+        except ValueError:
+            flash('Montant invalide', 'danger')
+            return render_template('saisies/achat.html', chantiers=chantiers)
+        
         date_achat = request.form.get('date_achat')
         fournisseur = request.form.get('fournisseur')
         description = request.form.get('description')
         categorie = request.form.get('categorie', 'achats')
         
+        if not fournisseur or not date_achat:
+            flash('Veuillez remplir tous les champs obligatoires', 'danger')
+            return render_template('saisies/achat.html', chantiers=chantiers)
+        
         photo = request.files.get('photo')
         photo_filename = None
         
-        if montant > 500 and not photo:
+        if montant > 500 and (not photo or not photo.filename):
             flash('Photo justificative obligatoire pour les montants > 500 MAD', 'danger')
             return render_template('saisies/achat.html', chantiers=chantiers)
         
-        if photo:
+        if photo and photo.filename:
             photo_filename = save_photo(photo)
+            if not photo_filename:
+                flash('Format de fichier non autorisé. Utilisez JPG, PNG ou GIF', 'danger')
+                return render_template('saisies/achat.html', chantiers=chantiers)
         
         achat = Achat(
             chantier_id=chantier_id,
@@ -75,19 +103,36 @@ def nouvelle_avance():
     
     if request.method == 'POST':
         chantier_id = request.form.get('chantier_id')
-        montant = float(request.form.get('montant', 0))
+        
+        if not user_has_access_to_chantier(user.id, role, chantier_id):
+            flash('Accès non autorisé à ce chantier', 'danger')
+            return redirect(url_for('dashboard.index'))
+        
+        try:
+            montant = float(request.form.get('montant', 0))
+        except ValueError:
+            flash('Montant invalide', 'danger')
+            return render_template('saisies/avance.html', chantiers=chantiers)
+        
         date_avance = request.form.get('date_avance')
         description = request.form.get('description')
+        
+        if not date_avance:
+            flash('Veuillez remplir tous les champs obligatoires', 'danger')
+            return render_template('saisies/avance.html', chantiers=chantiers)
         
         photo = request.files.get('photo')
         photo_filename = None
         
-        if montant > 500 and not photo:
+        if montant > 500 and (not photo or not photo.filename):
             flash('Photo justificative obligatoire pour les montants > 500 MAD', 'danger')
             return render_template('saisies/avance.html', chantiers=chantiers)
         
-        if photo:
+        if photo and photo.filename:
             photo_filename = save_photo(photo)
+            if not photo_filename:
+                flash('Format de fichier non autorisé. Utilisez JPG, PNG ou GIF', 'danger')
+                return render_template('saisies/avance.html', chantiers=chantiers)
         
         avance = Avance(
             chantier_id=chantier_id,
@@ -116,11 +161,25 @@ def nouvelle_heure():
     
     if request.method == 'POST':
         chantier_id = request.form.get('chantier_id')
-        quantite = float(request.form.get('quantite', 0))
-        tarif_unitaire = float(request.form.get('tarif_unitaire', 0))
+        
+        if not user_has_access_to_chantier(user.id, role, chantier_id):
+            flash('Accès non autorisé à ce chantier', 'danger')
+            return redirect(url_for('dashboard.index'))
+        
+        try:
+            quantite = float(request.form.get('quantite', 0))
+            tarif_unitaire = float(request.form.get('tarif_unitaire', 0))
+        except ValueError:
+            flash('Valeurs numériques invalides', 'danger')
+            return render_template('saisies/heure.html', chantiers=chantiers)
+        
         date_travail = request.form.get('date_travail')
         description = request.form.get('description')
         type_travail = request.form.get('type_travail', 'main_oeuvre')
+        
+        if not date_travail or quantite <= 0 or tarif_unitaire <= 0:
+            flash('Veuillez remplir tous les champs obligatoires avec des valeurs valides', 'danger')
+            return render_template('saisies/heure.html', chantiers=chantiers)
         
         cout_total = quantite * tarif_unitaire
         

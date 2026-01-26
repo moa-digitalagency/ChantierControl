@@ -20,11 +20,19 @@ def liste():
 @validation_bp.route('/achat/<int:id>/<action>', methods=['POST'])
 @direction_required
 def valider_achat(id, action):
+    if action not in ['valider', 'refuser']:
+        flash('Action non valide', 'danger')
+        return redirect(url_for('validation.liste'))
+    
     user = get_current_user()
     achat = db.session.get(Achat, id)
     
     if not achat:
         flash('Achat non trouvé', 'danger')
+        return redirect(url_for('validation.liste'))
+    
+    if achat.statut != 'en_attente':
+        flash('Cette saisie a déjà été traitée', 'warning')
         return redirect(url_for('validation.liste'))
     
     commentaire = request.form.get('commentaire', '')
@@ -33,6 +41,9 @@ def valider_achat(id, action):
         achat.statut = 'valide'
         flash('Achat validé', 'success')
     elif action == 'refuser':
+        if not commentaire:
+            flash('Un commentaire est requis pour refuser', 'danger')
+            return redirect(url_for('validation.liste'))
         achat.statut = 'refuse'
         flash('Achat refusé', 'warning')
     
@@ -46,11 +57,19 @@ def valider_achat(id, action):
 @validation_bp.route('/avance/<int:id>/<action>', methods=['POST'])
 @direction_required
 def valider_avance(id, action):
+    if action not in ['valider', 'refuser']:
+        flash('Action non valide', 'danger')
+        return redirect(url_for('validation.liste'))
+    
     user = get_current_user()
     avance = db.session.get(Avance, id)
     
     if not avance:
         flash('Avance non trouvée', 'danger')
+        return redirect(url_for('validation.liste'))
+    
+    if avance.statut != 'en_attente':
+        flash('Cette saisie a déjà été traitée', 'warning')
         return redirect(url_for('validation.liste'))
     
     commentaire = request.form.get('commentaire', '')
@@ -59,6 +78,9 @@ def valider_avance(id, action):
         avance.statut = 'valide'
         flash('Avance validée', 'success')
     elif action == 'refuser':
+        if not commentaire:
+            flash('Un commentaire est requis pour refuser', 'danger')
+            return redirect(url_for('validation.liste'))
         avance.statut = 'refuse'
         flash('Avance refusée', 'warning')
     
@@ -72,11 +94,19 @@ def valider_avance(id, action):
 @validation_bp.route('/heure/<int:id>/<action>', methods=['POST'])
 @direction_required
 def valider_heure(id, action):
+    if action not in ['valider', 'refuser']:
+        flash('Action non valide', 'danger')
+        return redirect(url_for('validation.liste'))
+    
     user = get_current_user()
     heure = db.session.get(Heure, id)
     
     if not heure:
         flash('Heures non trouvées', 'danger')
+        return redirect(url_for('validation.liste'))
+    
+    if heure.statut != 'en_attente':
+        flash('Cette saisie a déjà été traitée', 'warning')
         return redirect(url_for('validation.liste'))
     
     commentaire = request.form.get('commentaire', '')
@@ -85,6 +115,9 @@ def valider_heure(id, action):
         heure.statut = 'valide'
         flash('Heures validées', 'success')
     elif action == 'refuser':
+        if not commentaire:
+            flash('Un commentaire est requis pour refuser', 'danger')
+            return redirect(url_for('validation.liste'))
         heure.statut = 'refuse'
         flash('Heures refusées', 'warning')
     
