@@ -6,11 +6,3 @@ werkzeug==3.0.1
 pillow==10.1.0
 gunicorn==21.2.0
 python-dotenv==1.0.0
-flask
-flask-login
-flask-sqlalchemy
-gunicorn
-pillow
-psycopg2-binary
-python-dotenv
-werkzeug
