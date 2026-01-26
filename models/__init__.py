@@ -7,6 +7,20 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 
+class Entreprise(db.Model):
+    __tablename__ = 'entreprises'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(200), nullable=False)
+    adresse = db.Column(db.String(500))
+    telephone = db.Column(db.String(20))
+    email = db.Column(db.String(100))
+    actif = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    users = db.relationship('User', back_populates='entreprise', lazy='dynamic')
+    chantiers = db.relationship('Chantier', back_populates='entreprise', lazy='dynamic')
+
 class User(db.Model):
     __tablename__ = 'users'
     
@@ -16,9 +30,13 @@ class User(db.Model):
     nom = db.Column(db.String(100), nullable=False)
     prenom = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(50), nullable=False)
+    entreprise_id = db.Column(db.Integer, db.ForeignKey('entreprises.id'), nullable=True)
     actif = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
+    entreprise = db.relationship('Entreprise', back_populates='users')
+    created_by = db.relationship('User', remote_side=[id], backref='created_users')
     assignments = db.relationship('ChantierAssignment', back_populates='user', lazy='dynamic')
     achats = db.relationship('Achat', back_populates='saisi_par', lazy='dynamic', foreign_keys='Achat.user_id')
     avances = db.relationship('Avance', back_populates='beneficiaire', lazy='dynamic', foreign_keys='Avance.user_id')
@@ -28,6 +46,7 @@ class Chantier(db.Model):
     __tablename__ = 'chantiers'
     
     id = db.Column(db.Integer, primary_key=True)
+    entreprise_id = db.Column(db.Integer, db.ForeignKey('entreprises.id'), nullable=True)
     nom = db.Column(db.String(200), nullable=False)
     adresse = db.Column(db.String(500))
     latitude = db.Column(db.Float)
@@ -36,6 +55,7 @@ class Chantier(db.Model):
     statut = db.Column(db.String(50), default='en_cours')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    entreprise = db.relationship('Entreprise', back_populates='chantiers')
     assignments = db.relationship('ChantierAssignment', back_populates='chantier', lazy='dynamic')
     achats = db.relationship('Achat', back_populates='chantier', lazy='dynamic')
     avances = db.relationship('Avance', back_populates='chantier', lazy='dynamic')

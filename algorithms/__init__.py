@@ -80,23 +80,30 @@ def verifier_alertes(chantier_id):
     
     return alertes
 
-def verifier_saisies_en_attente():
+def verifier_saisies_en_attente(entreprise_id=None):
     seuil = datetime.utcnow() - timedelta(hours=24)
     
-    achats_anciens = Achat.query.filter(
+    achats_query = Achat.query.filter(
         Achat.statut == 'en_attente',
         Achat.created_at < seuil
-    ).count()
-    
-    avances_anciennes = Avance.query.filter(
+    )
+    avances_query = Avance.query.filter(
         Avance.statut == 'en_attente',
         Avance.created_at < seuil
-    ).count()
-    
-    heures_anciennes = Heure.query.filter(
+    )
+    heures_query = Heure.query.filter(
         Heure.statut == 'en_attente',
         Heure.created_at < seuil
-    ).count()
+    )
+    
+    if entreprise_id:
+        achats_query = achats_query.join(Chantier).filter(Chantier.entreprise_id == entreprise_id)
+        avances_query = avances_query.join(Chantier).filter(Chantier.entreprise_id == entreprise_id)
+        heures_query = heures_query.join(Chantier).filter(Chantier.entreprise_id == entreprise_id)
+    
+    achats_anciens = achats_query.count()
+    avances_anciennes = avances_query.count()
+    heures_anciennes = heures_query.count()
     
     total = achats_anciens + avances_anciennes + heures_anciennes
     

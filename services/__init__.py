@@ -1,9 +1,12 @@
 from models import db, Chantier, ChantierAssignment, Achat, Avance, Heure
 from algorithms import calculer_kpi_chantier, verifier_alertes
 
-def get_chantiers_utilisateur(user_id, role):
+def get_chantiers_utilisateur(user_id, role, entreprise_id=None):
     if role == 'direction':
-        return Chantier.query.filter_by(statut='en_cours').all()
+        query = Chantier.query.filter_by(statut='en_cours')
+        if entreprise_id:
+            query = query.filter_by(entreprise_id=entreprise_id)
+        return query.all()
     
     assignments = ChantierAssignment.query.filter_by(
         user_id=user_id,
@@ -16,8 +19,11 @@ def get_chantiers_utilisateur(user_id, role):
         Chantier.statut == 'en_cours'
     ).all()
 
-def get_dashboard_direction():
-    chantiers = Chantier.query.filter_by(statut='en_cours').all()
+def get_dashboard_direction(entreprise_id=None):
+    query = Chantier.query.filter_by(statut='en_cours')
+    if entreprise_id:
+        query = query.filter_by(entreprise_id=entreprise_id)
+    chantiers = query.all()
     
     dashboard_data = []
     for chantier in chantiers:
@@ -33,10 +39,19 @@ def get_dashboard_direction():
     
     return dashboard_data
 
-def get_saisies_en_attente():
-    achats = Achat.query.filter_by(statut='en_attente').order_by(Achat.created_at.desc()).all()
-    avances = Avance.query.filter_by(statut='en_attente').order_by(Avance.created_at.desc()).all()
-    heures = Heure.query.filter_by(statut='en_attente').order_by(Heure.created_at.desc()).all()
+def get_saisies_en_attente(entreprise_id=None):
+    achats_query = Achat.query.filter_by(statut='en_attente')
+    avances_query = Avance.query.filter_by(statut='en_attente')
+    heures_query = Heure.query.filter_by(statut='en_attente')
+    
+    if entreprise_id:
+        achats_query = achats_query.join(Chantier).filter(Chantier.entreprise_id == entreprise_id)
+        avances_query = avances_query.join(Chantier).filter(Chantier.entreprise_id == entreprise_id)
+        heures_query = heures_query.join(Chantier).filter(Chantier.entreprise_id == entreprise_id)
+    
+    achats = achats_query.order_by(Achat.created_at.desc()).all()
+    avances = avances_query.order_by(Avance.created_at.desc()).all()
+    heures = heures_query.order_by(Heure.created_at.desc()).all()
     
     return {
         'achats': achats,
@@ -51,10 +66,10 @@ def get_derniers_achats(chantier_id, limit=5):
         statut='valide'
     ).order_by(Achat.date_achat.desc()).limit(limit).all()
 
-def get_tresorerie_par_chef():
+def get_tresorerie_par_chef(entreprise_id=None):
     from sqlalchemy import func
     
-    result = db.session.query(
+    query = db.session.query(
         ChantierAssignment.user_id,
         func.sum(Avance.montant).label('total_avances'),
         func.sum(Achat.montant).label('total_depenses')
@@ -65,6 +80,11 @@ def get_tresorerie_par_chef():
     ).filter(
         Avance.statut == 'valide',
         Achat.statut == 'valide'
-    ).group_by(ChantierAssignment.user_id).all()
+    )
+    
+    if entreprise_id:
+        query = query.join(Chantier).filter(Chantier.entreprise_id == entreprise_id)
+    
+    result = query.group_by(ChantierAssignment.user_id).all()
     
     return result

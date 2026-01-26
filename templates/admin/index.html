@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Administration - {{ entreprise.nom }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-indigo-800">
+        <i class="fas fa-building mr-2"></i> {{ entreprise.nom }}
+    </h1>
+    <p class="text-gray-600">Gérez les utilisateurs et les chantiers de votre entreprise</p>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="border-b px-6 py-4 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-users mr-2 text-indigo-600"></i> Utilisateurs
+            </h2>
+            <a href="{{ url_for('admin.nouvel_utilisateur') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm">
+                <i class="fas fa-plus mr-1"></i> Nouveau
+            </a>
+        </div>
+        <div class="p-6">
+            {% if users %}
+            <div class="space-y-3">
+                {% for user in users %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium">{{ user.prenom }} {{ user.nom }}</p>
+                        <div class="text-sm text-gray-500 flex flex-wrap gap-2">
+                            <span><i class="fas fa-phone mr-1"></i> {{ user.telephone }}</span>
+                            <span class="px-2 py-0.5 bg-gray-200 rounded text-xs">
+                                {% if user.role == 'direction' %}Direction
+                                {% elif user.role == 'chef_chantier' %}Chef Chantier
+                                {% elif user.role == 'responsable_achats' %}Resp. Achats
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <form action="{{ url_for('admin.toggle_utilisateur', id=user.id) }}" method="post" class="inline">
+                            <button type="submit" class="px-2 py-1 text-xs rounded-full {% if user.actif %}bg-green-100 text-green-800 hover:bg-green-200{% else %}bg-red-100 text-red-800 hover:bg-red-200{% endif %}">
+                                {{ 'Actif' if user.actif else 'Inactif' }}
+                            </button>
+                        </form>
+                        <a href="{{ url_for('admin.modifier_utilisateur', id=user.id) }}" class="text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-4">Aucun utilisateur créé</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="border-b px-6 py-4 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-hard-hat mr-2 text-blue-600"></i> Chantiers
+            </h2>
+            <a href="{{ url_for('admin.nouveau_chantier') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+                <i class="fas fa-plus mr-1"></i> Nouveau
+            </a>
+        </div>
+        <div class="p-6">
+            {% if chantiers %}
+            <div class="space-y-3">
+                {% for chantier in chantiers %}
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-medium">{{ chantier.nom }}</p>
+                            <p class="text-sm text-gray-500">{{ chantier.adresse or 'Adresse non renseignée' }}</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded-full {% if chantier.statut == 'en_cours' %}bg-green-100 text-green-800{% elif chantier.statut == 'termine' %}bg-gray-100 text-gray-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ chantier.statut.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-600">
+                        Budget: {{ format_currency(chantier.budget_previsionnel) }}
+                    </div>
+                    <div class="mt-2 flex gap-2">
+                        <a href="{{ url_for('chantiers.detail', id=chantier.id) }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-eye mr-1"></i> Voir
+                        </a>
+                        <a href="{{ url_for('chantiers.assigner', id=chantier.id) }}" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                            <i class="fas fa-user-plus mr-1"></i> Assigner
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-4">Aucun chantier créé</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="mt-6 grid md:grid-cols-3 gap-4">
+    <a href="{{ url_for('validation.liste') }}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500 text-sm">Saisies en attente</p>
+                <p class="text-2xl font-bold text-gray-800">Valider</p>
+            </div>
+        </div>
+    </a>
+    
+    <a href="{{ url_for('chantiers.liste') }}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-chart-line text-blue-600 text-xl"></i>
+            </div>
+            <div>
+                <p class="text-gray-500 text-sm">Tableau de bord</p>
+                <p class="text-2xl font-bold text-gray-800">KPIs</p>
+            </div>
+        </div>
+    </a>
+    
+    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-6">
+        <h3 class="font-semibold text-indigo-800 mb-2">
+            <i class="fas fa-info-circle mr-1"></i> Rôles disponibles
+        </h3>
+        <ul class="text-sm text-indigo-700 space-y-1">
+            <li><i class="fas fa-user-tie mr-2"></i> <strong>Direction</strong> - Valide les saisies</li>
+            <li><i class="fas fa-hard-hat mr-2"></i> <strong>Chef Chantier</strong> - Saisit tout</li>
+            <li><i class="fas fa-shopping-cart mr-2"></i> <strong>Resp. Achats</strong> - Achats uniquement</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
