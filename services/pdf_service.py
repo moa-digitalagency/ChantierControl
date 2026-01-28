@@ -17,7 +17,7 @@ def generate_chantier_report(chantier_id, output_path=None):
         return None
 
     kpi = calculer_kpi_chantier(chantier_id)
-    alertes = verifier_alertes(chantier_id)
+    alertes = verifier_alertes(chantier_id, kpi=kpi)
     derniers_achats = get_derniers_achats(chantier_id, limit=10)
 
     if output_path is None:
