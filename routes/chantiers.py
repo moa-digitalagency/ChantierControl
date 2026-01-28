@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
 from models import db, Chantier, ChantierAssignment, User
 from security import login_required, direction_required, get_current_user
 from algorithms import calculer_kpi_chantier, verifier_alertes
-from services import get_derniers_achats
+from services import get_derniers_achats, generate_chantier_report
 
 chantiers_bp = Blueprint('chantiers', __name__, url_prefix='/chantiers')
 
@@ -138,3 +138,35 @@ def desassigner(id, user_id):
         flash('Utilisateur retiré du chantier', 'success')
     
     return redirect(url_for('chantiers.detail', id=id))
+
+@chantiers_bp.route('/<int:id>/rapport')
+@login_required
+def rapport(id):
+    user = get_current_user()
+    role = session.get('user_role')
+
+    chantier = db.session.get(Chantier, id)
+    if not chantier:
+        flash('Chantier non trouvé', 'danger')
+        return redirect(url_for('chantiers.liste'))
+
+    # Check access
+    if role != 'direction':
+        assignment = ChantierAssignment.query.filter_by(
+            user_id=user.id, chantier_id=id, actif=True
+        ).first()
+        if not assignment:
+            flash('Accès non autorisé', 'danger')
+            return redirect(url_for('dashboard.index'))
+
+    output_path = generate_chantier_report(id)
+    if not output_path:
+        flash('Erreur lors de la génération du rapport', 'danger')
+        return redirect(url_for('chantiers.detail', id=id))
+
+    return send_file(
+        output_path,
+        as_attachment=True,
+        download_name=f"rapport_chantier_{chantier.nom}_{id}.pdf",
+        mimetype='application/pdf'
+    )
