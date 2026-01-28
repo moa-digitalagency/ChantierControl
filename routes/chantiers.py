@@ -69,7 +69,7 @@ def detail(id):
             return redirect(url_for('dashboard.index'))
     
     kpi = calculer_kpi_chantier(id)
-    alertes = verifier_alertes(id)
+    alertes = verifier_alertes(id, kpi=kpi)
     derniers_achats = get_derniers_achats(id)
     
     users_assignes = ChantierAssignment.query.filter_by(

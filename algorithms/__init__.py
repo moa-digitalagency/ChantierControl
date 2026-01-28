@@ -1,31 +1,32 @@
 from models import db, Chantier, Achat, Avance, Heure, Alerte
 from datetime import datetime, timedelta
+from sqlalchemy import func
 
 def calculer_kpi_chantier(chantier_id):
     chantier = db.session.get(Chantier, chantier_id)
     if not chantier:
         return None
     
-    achats_valides = Achat.query.filter_by(
+    total_achats = db.session.query(func.sum(Achat.montant)).filter_by(
         chantier_id=chantier_id, 
         statut='valide'
-    ).all()
+    ).scalar() or 0
     
-    heures_validees = Heure.query.filter_by(
+    total_salaires = db.session.query(func.sum(Heure.cout_total)).filter_by(
         chantier_id=chantier_id,
         statut='valide'
-    ).all()
+    ).scalar() or 0
     
-    avances_validees = Avance.query.filter_by(
+    total_avances = db.session.query(func.sum(Avance.montant)).filter_by(
         chantier_id=chantier_id,
         statut='valide'
-    ).all()
+    ).scalar() or 0
     
-    total_achats = sum(a.montant for a in achats_valides)
-    total_salaires = sum(h.cout_total for h in heures_validees)
-    total_avances = sum(a.montant for a in avances_validees)
-    
-    transport = sum(a.montant for a in achats_valides if a.categorie == 'transport')
+    transport = db.session.query(func.sum(Achat.montant)).filter_by(
+        chantier_id=chantier_id,
+        statut='valide',
+        categorie='transport'
+    ).scalar() or 0
     
     cout_total = total_achats + total_salaires
     budget = chantier.budget_previsionnel or 1
@@ -50,8 +51,9 @@ def calculer_kpi_chantier(chantier_id):
         'cout_revient': cout_total
     }
 
-def verifier_alertes(chantier_id):
-    kpi = calculer_kpi_chantier(chantier_id)
+def verifier_alertes(chantier_id, kpi=None):
+    if kpi is None:
+        kpi = calculer_kpi_chantier(chantier_id)
     if not kpi:
         return []
     

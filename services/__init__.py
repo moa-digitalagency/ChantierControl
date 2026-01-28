@@ -65,7 +65,7 @@ def get_dashboard_direction(entreprise_id=None):
     dashboard_data = []
     for chantier in chantiers:
         kpi = calculer_kpi_chantier(chantier.id)
-        alertes = verifier_alertes(chantier.id)
+        alertes = verifier_alertes(chantier.id, kpi=kpi)
         
         dashboard_data.append({
             'chantier': chantier,
