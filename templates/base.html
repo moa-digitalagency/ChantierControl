@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#3b82f6">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
     <title>{% block title %}Gestion Chantiers{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -132,9 +134,23 @@
         {% block content %}{% endblock %}
     </main>
     
+    <script src="{{ url_for('static', filename='js/offline_sync.js') }}"></script>
     <script>
         function toggleMobileMenu() {
             document.getElementById('mobileMenu').classList.toggle('active');
+        }
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
         }
     </script>
     {% block scripts %}{% endblock %}

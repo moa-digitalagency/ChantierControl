@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from models import db, Achat, Avance, Heure
 from security import direction_required, get_current_user
 from datetime import datetime
+from services import process_alerts
 
 validation_bp = Blueprint('validation', __name__, url_prefix='/validation')
 
@@ -52,6 +53,10 @@ def valider_achat(id, action):
     achat.date_validation = datetime.utcnow()
     
     db.session.commit()
+
+    if action == 'valider':
+        process_alerts(achat.chantier_id)
+
     return redirect(url_for('validation.liste'))
 
 @validation_bp.route('/avance/<int:id>/<action>', methods=['POST'])
@@ -89,6 +94,10 @@ def valider_avance(id, action):
     avance.date_validation = datetime.utcnow()
     
     db.session.commit()
+
+    if action == 'valider':
+        process_alerts(avance.chantier_id)
+
     return redirect(url_for('validation.liste'))
 
 @validation_bp.route('/heure/<int:id>/<action>', methods=['POST'])
@@ -126,4 +135,8 @@ def valider_heure(id, action):
     heure.date_validation = datetime.utcnow()
     
     db.session.commit()
+
+    if action == 'valider':
+        process_alerts(heure.chantier_id)
+
     return redirect(url_for('validation.liste'))

@@ -1,5 +1,42 @@
-from models import db, Chantier, ChantierAssignment, Achat, Avance, Heure
+from models import db, Chantier, ChantierAssignment, Achat, Avance, Heure, Alerte
 from algorithms import calculer_kpi_chantier, verifier_alertes
+from services.pdf_service import generate_chantier_report
+from services.notification_service import notify_direction
+
+def process_alerts(chantier_id):
+    """
+    Checks for alerts, saves them to DB if new, and sends notifications.
+    """
+    # Import inside to avoid circular deps if any, though verify_alertes is in algorithms
+    generated_alerts = verifier_alertes(chantier_id)
+    chantier = db.session.get(Chantier, chantier_id)
+
+    if not generated_alerts:
+        return
+
+    for alert_data in generated_alerts:
+        # Check if active (unread) alert of same type exists for this chantier
+        existing = Alerte.query.filter_by(
+            chantier_id=chantier_id,
+            type_alerte=alert_data['type'],
+            lu=False
+        ).first()
+
+        if not existing:
+            # Create new alert
+            new_alert = Alerte(
+                chantier_id=chantier_id,
+                type_alerte=alert_data['type'],
+                message=alert_data['message'],
+                niveau=alert_data['niveau']
+            )
+            db.session.add(new_alert)
+
+            # Send notification
+            subject = f"Alerte Chantier: {chantier.nom}"
+            notify_direction(subject, alert_data['message'])
+
+    db.session.commit()
 
 def get_chantiers_utilisateur(user_id, role, entreprise_id=None):
     if role == 'direction':
