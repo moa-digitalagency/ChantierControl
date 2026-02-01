@@ -27,7 +27,7 @@ class Entreprise(db.Model):
     logo = db.Column(db.String(500))
     actif = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    admin_principal_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    admin_principal_id = db.Column(db.Integer, db.ForeignKey('users.id', use_alter=True, name='fk_entreprise_admin'), nullable=True)
     
     users = db.relationship('User', back_populates='entreprise', lazy='dynamic', foreign_keys='User.entreprise_id')
     chantiers = db.relationship('Chantier', back_populates='entreprise', lazy='dynamic')

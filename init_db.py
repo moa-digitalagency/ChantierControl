@@ -1,17 +1,50 @@
 #!/usr/bin/env python3
 import os
 import sys
+import time
+from sqlalchemy.exc import OperationalError
 
-os.environ.setdefault('DATABASE_URL', os.environ.get('DATABASE_URL', ''))
+# NOTE: Do NOT set default DATABASE_URL here using os.environ.setdefault.
+# It overrides the default in app.py if the env var is missing.
 
 from app import app
 from models import db, User, Entreprise
 from security import hash_pin
 
-def init_database():
+def wait_for_db(app):
+    """Waits for the database to be available."""
+    print("Waiting for database connection...")
     with app.app_context():
-        db.create_all()
-        print("Tables créées avec succès!")
+        retries = 30
+        while retries > 0:
+            try:
+                # Try to connect
+                with db.engine.connect() as conn:
+                    pass
+                print("Database is ready!")
+                return True
+            except OperationalError:
+                retries -= 1
+                print(f"Database unavailable, retrying in 1s... ({retries} left)")
+                time.sleep(1)
+            except Exception as e:
+                print(f"Unexpected error connecting to DB: {e}")
+                return False
+    return False
+
+def init_database():
+    # Ensure DB is ready (useful for Docker/deployment)
+    if not wait_for_db(app):
+        print("Could not connect to database after retries.")
+        sys.exit(1)
+
+    with app.app_context():
+        try:
+            db.create_all()
+            print("Tables créées avec succès!")
+        except Exception as e:
+            print(f"Erreur lors de la création des tables: {e}")
+            sys.exit(1)
         
         super_admin = User.query.filter_by(role='super_admin').first()
         
@@ -32,7 +65,7 @@ def init_database():
                 print("  - SUPER_ADMIN_NOM (optionnel, défaut: 'Super')")
                 print("  - SUPER_ADMIN_PRENOM (optionnel, défaut: 'Admin')")
                 print("=" * 60)
-                return False
+                sys.exit(1)
             
             super_admin = User(
                 telephone=sa_telephone,
