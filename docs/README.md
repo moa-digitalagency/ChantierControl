@@ -1,28 +1,28 @@
-# Application de Contrôle de Gestion des Chantiers
+# Documentation Officielle - Gestion Chantiers SaaS
 
-## Description
-Application web dédiée au contrôle de gestion opérationnelle des chantiers de construction.
+Bienvenue dans la documentation complète de la plateforme de Gestion de Chantiers.
 
-## Fonctionnalités
-- Suivi des coûts (salaires, achats, transport)
-- Contrôle de trésorerie (acomptes vs dépenses justifiées)
-- Tableaux de bord avec indicateurs clés
+## Index de la Documentation
 
-## Profils Utilisateurs
+Veuillez consulter les guides suivants selon vos besoins :
 
-| Profil | Accès | Actions |
-|--------|-------|---------|
-| Direction | Tous les chantiers | Assigner accès, valider saisies, consulter dashboards |
-| Chef de Chantier | Chantiers assignés | Saisir achats/avances, uploader justificatifs |
-| Responsable Achats | Chantiers assignés | Saisir achats, uploader justificatifs |
+### 1. Comprendre la Solution
+*   **[Modèle SaaS & Business](modele_saas.md)** : Comprendre comment fonctionne l'architecture multi-clients et la hiérarchie commerciale.
+*   **[Guide Fonctionnel](guide_fonctionnel.md)** : Description détaillée des fonctionnalités (Chantiers, Budgets, Workflows de validation).
 
-## Utilisateurs de Test
+### 2. Utiliser l'Application
+*   **[Manuel Utilisateur](manuel_utilisateur.md)** : Guide pas-à-pas pour tous les rôles (Super Admin, Admin, Chef de Chantier, Direction).
+    *   *Comment se connecter*
+    *   *Comment saisir une dépense*
+    *   *Comment gérer une entreprise*
 
-- Direction: 0600000000 / PIN: 1234
-- Chef Chantier: 0611111111 / PIN: 1234
-- Responsable Achats: 0622222222 / PIN: 1234
+### 3. Technique & Déploiement
+*   **[Architecture Technique](architecture_technique.md)** : Pour les développeurs et administrateurs système.
+    *   Stack technique (Python/Flask)
+    *   Schéma de base de données
+    *   Structure du code
+    *   Déploiement et Sécurité
 
-## Stack Technique
-- Backend: Python Flask
-- Frontend: HTML, CSS avec Tailwind
-- Base de données: PostgreSQL
+---
+
+*Documentation générée et maintenue par l'équipe technique.*
