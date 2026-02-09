@@ -40,9 +40,11 @@ def create_app():
     @app.context_processor
     def utility_processor():
         from utils import format_currency, format_percentage
+        from datetime import datetime
         return dict(
             format_currency=format_currency,
-            format_percentage=format_percentage
+            format_percentage=format_percentage,
+            now=datetime.utcnow
         )
     
     with app.app_context():
