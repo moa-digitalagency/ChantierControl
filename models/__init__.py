@@ -42,6 +42,7 @@ class User(db.Model):
     nom = db.Column(db.String(100), nullable=False)
     prenom = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(50), nullable=False)
+    role_label = db.Column(db.String(100))  # Libellé du poste personnalisé
     entreprise_id = db.Column(db.Integer, db.ForeignKey('entreprises.id'), nullable=True)
     actif = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -98,6 +99,7 @@ class Achat(db.Model):
     categorie = db.Column(db.String(100), default='achats')
     photo_justificatif = db.Column(db.String(500))
     statut = db.Column(db.String(50), default='en_attente')
+    remarque_modification = db.Column(db.Text)  # Raison de la modification
     commentaire_validation = db.Column(db.Text)
     valide_par_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     date_validation = db.Column(db.DateTime)
@@ -118,6 +120,7 @@ class Avance(db.Model):
     description = db.Column(db.Text)
     photo_justificatif = db.Column(db.String(500))
     statut = db.Column(db.String(50), default='en_attente')
+    remarque_modification = db.Column(db.Text)  # Raison de la modification
     commentaire_validation = db.Column(db.Text)
     valide_par_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     date_validation = db.Column(db.DateTime)
@@ -140,6 +143,7 @@ class Heure(db.Model):
     description = db.Column(db.Text)
     type_travail = db.Column(db.String(100), default='main_oeuvre')
     statut = db.Column(db.String(50), default='en_attente')
+    remarque_modification = db.Column(db.Text)  # Raison de la modification
     commentaire_validation = db.Column(db.Text)
     valide_par_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     date_validation = db.Column(db.DateTime)

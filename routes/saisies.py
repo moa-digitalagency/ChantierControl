@@ -8,8 +8,11 @@ saisies_bp = Blueprint('saisies', __name__, url_prefix='/saisies')
 
 def get_user_chantiers(user_id, role):
     if role == 'direction':
-        from models import Chantier
-        return Chantier.query.filter_by(statut='en_cours').all()
+        from models import Chantier, User
+        user = db.session.get(User, user_id)
+        if user and user.entreprise_id:
+             return Chantier.query.filter_by(entreprise_id=user.entreprise_id, statut='en_cours').all()
+        return []
     
     assignments = ChantierAssignment.query.filter_by(
         user_id=user_id, actif=True
@@ -202,3 +205,119 @@ def nouvelle_heure():
         return redirect(url_for('dashboard.index'))
     
     return render_template('saisies/heure.html', chantiers=chantiers)
+
+@saisies_bp.route('/<type_saisie>/<int:id>/modifier', methods=['GET', 'POST'])
+@login_required
+def modifier_saisie(type_saisie, id):
+    user = get_current_user()
+    role = session.get('user_role')
+
+    if role != 'direction':
+        flash('Accès réservé à la direction', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    if type_saisie == 'achat':
+        model = Achat
+        template = 'saisies/modifier_achat.html'
+    elif type_saisie == 'avance':
+        model = Avance
+        template = 'saisies/modifier_avance.html'
+    elif type_saisie == 'heure':
+        model = Heure
+        template = 'saisies/modifier_heure.html'
+    else:
+        flash('Type de saisie invalide', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    entry = db.session.get(model, id)
+    if not entry:
+        flash('Saisie introuvable', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    if entry.statut != 'en_attente':
+        flash('Modification impossible : saisie déjà traitée', 'warning')
+        return redirect(url_for('validation.liste'))
+
+    if request.method == 'POST':
+        remarque = request.form.get('remarque_modification')
+        if not remarque:
+            flash('Une remarque est obligatoire pour toute modification', 'danger')
+            return render_template(template, entry=entry)
+
+        if type_saisie == 'achat':
+            try:
+                entry.montant = float(request.form.get('montant'))
+            except ValueError:
+                flash('Montant invalide', 'danger')
+                return render_template(template, entry=entry)
+
+            entry.fournisseur = request.form.get('fournisseur')
+            entry.date_achat = date.fromisoformat(request.form.get('date_achat'))
+            entry.description = request.form.get('description')
+            entry.categorie = request.form.get('categorie')
+
+        elif type_saisie == 'avance':
+            try:
+                entry.montant = float(request.form.get('montant'))
+            except ValueError:
+                flash('Montant invalide', 'danger')
+                return render_template(template, entry=entry)
+
+            entry.date_avance = date.fromisoformat(request.form.get('date_avance'))
+            entry.description = request.form.get('description')
+
+        elif type_saisie == 'heure':
+            try:
+                entry.quantite = float(request.form.get('quantite'))
+                entry.tarif_unitaire = float(request.form.get('tarif_unitaire'))
+            except ValueError:
+                flash('Valeurs numériques invalides', 'danger')
+                return render_template(template, entry=entry)
+
+            entry.cout_total = entry.quantite * entry.tarif_unitaire
+            entry.date_travail = date.fromisoformat(request.form.get('date_travail'))
+            entry.description = request.form.get('description')
+            entry.type_travail = request.form.get('type_travail')
+
+        entry.remarque_modification = remarque
+        db.session.commit()
+
+        flash('Saisie modifiée avec succès', 'success')
+        return redirect(url_for('validation.liste'))
+
+    return render_template(template, entry=entry)
+
+@saisies_bp.route('/<type_saisie>/<int:id>/supprimer', methods=['POST'])
+@login_required
+def supprimer_saisie(type_saisie, id):
+    user = get_current_user()
+    role = session.get('user_role')
+
+    if role != 'direction':
+        flash('Accès réservé à la direction', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    if type_saisie == 'achat':
+        model = Achat
+    elif type_saisie == 'avance':
+        model = Avance
+    elif type_saisie == 'heure':
+        model = Heure
+    else:
+        flash('Type de saisie invalide', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    entry = db.session.get(model, id)
+    if not entry:
+        flash('Saisie introuvable', 'danger')
+        return redirect(url_for('dashboard.index'))
+
+    if entry.statut != 'en_attente':
+        flash('Suppression impossible : saisie déjà traitée', 'warning')
+        return redirect(url_for('validation.liste'))
+
+    db.session.delete(entry)
+    db.session.commit()
+
+    flash('Saisie supprimée', 'success')
+    return redirect(url_for('validation.liste'))

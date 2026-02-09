@@ -61,6 +61,16 @@
                             <i class="fas fa-times mr-1"></i> Refuser
                         </button>
                     </div>
+                    <div class="flex justify-end gap-3 mt-2 md:mt-0 md:flex-col md:justify-center md:items-center md:border-l md:pl-4 md:ml-4 border-gray-100">
+                         <a href="{{ url_for('saisies.modifier_saisie', type_saisie='achat', id=achat.id) }}" class="text-gray-400 hover:text-blue-600 transition-colors" title="Modifier">
+                            <i class="fas fa-edit fa-lg"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='achat', id=achat.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette saisie ?');" class="inline">
+                            <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
+                                <i class="fas fa-trash fa-lg"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -116,6 +126,16 @@
                             <i class="fas fa-times mr-1"></i> Refuser
                         </button>
                     </div>
+                    <div class="flex justify-end gap-3 mt-2 md:mt-0 md:flex-col md:justify-center md:items-center md:border-l md:pl-4 md:ml-4 border-gray-100">
+                         <a href="{{ url_for('saisies.modifier_saisie', type_saisie='avance', id=avance.id) }}" class="text-gray-400 hover:text-blue-600 transition-colors" title="Modifier">
+                            <i class="fas fa-edit fa-lg"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='avance', id=avance.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette saisie ?');" class="inline">
+                            <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
+                                <i class="fas fa-trash fa-lg"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -170,6 +190,16 @@
                         <button type="button" onclick="showRefuseModal('heure', {{ heure.id }})" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
                             <i class="fas fa-times mr-1"></i> Refuser
                         </button>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-2 md:mt-0 md:flex-col md:justify-center md:items-center md:border-l md:pl-4 md:ml-4 border-gray-100">
+                         <a href="{{ url_for('saisies.modifier_saisie', type_saisie='heure', id=heure.id) }}" class="text-gray-400 hover:text-blue-600 transition-colors" title="Modifier">
+                            <i class="fas fa-edit fa-lg"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='heure', id=heure.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette saisie ?');" class="inline">
+                            <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
+                                <i class="fas fa-trash fa-lg"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

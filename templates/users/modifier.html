@@ -53,6 +53,13 @@
                     <option value="responsable_achats" {% if user.role == 'responsable_achats' %}selected{% endif %}>Responsable Achats</option>
                 </select>
             </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Poste (Libellé optionnel)</label>
+                <input type="text" name="role_label" value="{{ user.role_label or '' }}"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Ex: Sous-chef, Assistant...">
+            </div>
             
             <div class="flex items-center">
                 <input type="checkbox" name="actif" id="actif" class="w-4 h-4 text-blue-600 rounded" {% if user.actif %}checked{% endif %}>

@@ -1,6 +1,7 @@
 import unittest
 import os
 import sys
+import tempfile
 from datetime import date, datetime
 
 # Add root to path
@@ -13,12 +14,13 @@ from services import process_alerts
 
 class TestNewFeatures(unittest.TestCase):
     def setUp(self):
+        self.db_fd, self.db_path = tempfile.mkstemp()
+        os.environ['DATABASE_URL'] = f'sqlite:///{self.db_path}'
         self.app = create_app()
         self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         self.app_context = self.app.app_context()
         self.app_context.push()
-        db.create_all()
+        # db.create_all() is called in create_app
 
         # Create Dummy User and Chantier
         self.user = User(
@@ -43,6 +45,8 @@ class TestNewFeatures(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
+        os.close(self.db_fd)
+        os.unlink(self.db_path)
 
     def test_pdf_generation(self):
         # Add some data

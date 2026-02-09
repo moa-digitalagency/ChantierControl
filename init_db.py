@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from sqlalchemy.exc import OperationalError
+from sqlalchemy import inspect, text
 
 # NOTE: Do NOT set default DATABASE_URL here using os.environ.setdefault.
 # It overrides the default in app.py if the env var is missing.
@@ -42,9 +43,45 @@ def init_database():
         try:
             db.create_all()
             print("Tables créées avec succès!")
+
+            # Migration logic for v1.2
+            inspector = inspect(db.engine)
+
+            # Check users table
+            columns = [c['name'] for c in inspector.get_columns('users')]
+            if 'role_label' not in columns:
+                print("Migration: Ajout de role_label à la table users")
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN role_label VARCHAR(100)"))
+                    conn.commit()
+
+            # Check achats table
+            columns = [c['name'] for c in inspector.get_columns('achats')]
+            if 'remarque_modification' not in columns:
+                print("Migration: Ajout de remarque_modification à la table achats")
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE achats ADD COLUMN remarque_modification TEXT"))
+                    conn.commit()
+
+            # Check avances table
+            columns = [c['name'] for c in inspector.get_columns('avances')]
+            if 'remarque_modification' not in columns:
+                print("Migration: Ajout de remarque_modification à la table avances")
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE avances ADD COLUMN remarque_modification TEXT"))
+                    conn.commit()
+
+            # Check heures table
+            columns = [c['name'] for c in inspector.get_columns('heures')]
+            if 'remarque_modification' not in columns:
+                print("Migration: Ajout de remarque_modification à la table heures")
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE heures ADD COLUMN remarque_modification TEXT"))
+                    conn.commit()
+
         except Exception as e:
-            print(f"Erreur lors de la création des tables: {e}")
-            sys.exit(1)
+            print(f"Erreur lors de l'initialisation de la base: {e}")
+            # Continue execution to allow super admin check
         
         super_admin = User.query.filter_by(role='super_admin').first()
         
