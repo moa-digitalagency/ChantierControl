@@ -10,108 +10,183 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Professional Color Palettes per Role
+        const palettes = {
+            super_admin: {
+                50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd', 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9', 800: '#5b21b6', 900: '#4c1d95'
+            },
+            admin: {
+                50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81'
+            },
+            default: {
+                50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a'
+            }
+        };
+
+        const role = "{{ session.get('user_role', 'default') }}";
+        const theme = (role === 'super_admin') ? palettes.super_admin :
+                      (role === 'admin') ? palettes.admin : palettes.default;
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: theme
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        .sidebar-link.active {
-            background-color: #eff6ff; /* blue-50 */
-            color: #1d4ed8; /* blue-700 */
-            border-right: 4px solid #1d4ed8;
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
         }
-        /* Role specific overrides if needed, but blue is a safe default for users */
-        {% if session.get('user_role') == 'super_admin' %}
         .sidebar-link.active {
-            background-color: #f5f3ff; /* purple-50 */
-            color: #6d28d9; /* purple-700 */
-            border-right-color: #6d28d9;
+            background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.1) 0%, transparent 100%); /* Fallback if variable used */
+            background-color: #f3f4f6; /* Fallback */
+            border-left: 3px solid;
+            border-color: theme('colors.primary.500');
+            color: theme('colors.primary.700');
+            background: linear-gradient(90deg, theme('colors.primary.50') 0%, transparent 100%);
         }
-        {% elif session.get('user_role') == 'admin' %}
-        .sidebar-link.active {
-            background-color: #eef2ff; /* indigo-50 */
-            color: #4338ca; /* indigo-700 */
-            border-right-color: #4338ca;
+        .sidebar-link:hover:not(.active) {
+            background-color: theme('colors.gray.50');
+            color: theme('colors.primary.600');
         }
-        {% endif %}
+        .sidebar-link i {
+            width: 24px;
+            text-align: center;
+        }
+        /* Mobile transition */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+        }
     </style>
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-100 font-sans antialiased">
-    <div class="flex h-screen overflow-hidden">
+<body class="bg-gray-50 font-sans text-gray-800">
+    <div class="flex min-h-screen">
 
         <!-- Sidebar -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-full">
+        <aside id="sidebar" class="sidebar fixed md:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out flex flex-col h-full shadow-xl md:shadow-none">
             <!-- Sidebar Header -->
-            <div class="flex items-center justify-center h-16 border-b border-gray-200 px-6 bg-white">
-                <a href="{{ url_for('dashboard.index') }}" class="flex items-center gap-2 text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors">
-                    <i class="fas fa-hard-hat text-blue-600"></i>
-                    <span>Gestion Chantiers</span>
-                </a>
+            <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100 h-20">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30">
+                    <i class="fas fa-hard-hat text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-gray-900 leading-tight">Gestion<br>Chantiers</h1>
+                </div>
             </div>
 
             <!-- Navigation Links -->
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <nav class="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
                 {% if session.get('user_id') %}
                     {% set role = session.get('user_role') %}
 
                     {% if role == 'super_admin' %}
-                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Administration</p>
-                        <a href="{{ url_for('superadmin.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if request.endpoint == 'superadmin.index' %}active{% endif %}">
-                            <i class="fas fa-tachometer-alt w-5 text-center"></i>
-                            <span class="font-medium">Dashboard</span>
-                        </a>
-                        <a href="{{ url_for('superadmin.liste_entreprises') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if 'entreprise' in request.endpoint %}active{% endif %}">
-                            <i class="fas fa-building w-5 text-center"></i>
-                            <span class="font-medium">Entreprises</span>
-                        </a>
-                        <a href="{{ url_for('superadmin.parametres') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if request.endpoint == 'superadmin.parametres' %}active{% endif %}">
-                            <i class="fas fa-cog w-5 text-center"></i>
-                            <span class="font-medium">Paramètres</span>
-                        </a>
+                        <!-- Super Admin specific links -->
+                        <div>
+                            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Administration</p>
+                            <div class="space-y-1">
+                                <a href="{{ url_for('superadmin.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if request.endpoint == 'superadmin.index' %}active{% endif %}">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <span class="font-medium">Dashboard</span>
+                                </a>
+                                <a href="{{ url_for('superadmin.liste_entreprises') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'entreprise' in request.endpoint %}active{% endif %}">
+                                    <i class="fas fa-building"></i>
+                                    <span class="font-medium">Entreprises</span>
+                                </a>
+                                <a href="{{ url_for('superadmin.parametres') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if request.endpoint == 'superadmin.parametres' %}active{% endif %}">
+                                    <i class="fas fa-cog"></i>
+                                    <span class="font-medium">Paramètres</span>
+                                </a>
+                            </div>
+                        </div>
 
                     {% elif role == 'admin' %}
-                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Gestion</p>
-                        <a href="{{ url_for('admin.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if request.endpoint == 'admin.index' %}active{% endif %}">
-                            <i class="fas fa-users-cog w-5 text-center"></i>
-                            <span class="font-medium">Gestion</span>
-                        </a>
-                        <a href="{{ url_for('chantiers.liste') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if 'chantiers' in request.endpoint %}active{% endif %}">
-                            <i class="fas fa-building w-5 text-center"></i>
-                            <span class="font-medium">Chantiers</span>
-                        </a>
-                        <a href="{{ url_for('validation.liste') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if 'validation' in request.endpoint %}active{% endif %}">
-                            <i class="fas fa-check-circle w-5 text-center"></i>
-                            <span class="font-medium">Validations</span>
-                        </a>
+                        <div>
+                            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Gestion</p>
+                            <div class="space-y-1">
+                                <a href="{{ url_for('admin.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if request.endpoint == 'admin.index' %}active{% endif %}">
+                                    <i class="fas fa-users-cog"></i>
+                                    <span class="font-medium">Vue d'ensemble</span>
+                                </a>
+                                <a href="{{ url_for('chantiers.liste') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'chantiers' in request.endpoint %}active{% endif %}">
+                                    <i class="fas fa-building"></i>
+                                    <span class="font-medium">Chantiers</span>
+                                </a>
+                                <a href="{{ url_for('validation.liste') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'validation' in request.endpoint %}active{% endif %}">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span class="font-medium">Validations</span>
+                                </a>
+                            </div>
+                        </div>
 
                     {% else %}
-                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu Principal</p>
-                        <a href="{{ url_for('dashboard.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
-                            <i class="fas fa-tachometer-alt w-5 text-center"></i>
-                            <span class="font-medium">Tableau de bord</span>
-                        </a>
-                        <a href="{{ url_for('chantiers.liste') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if 'chantiers' in request.endpoint %}active{% endif %}">
-                            <i class="fas fa-building w-5 text-center"></i>
-                            <span class="font-medium">Chantiers</span>
-                        </a>
-                        {% if role == 'direction' %}
-                        <a href="{{ url_for('validation.liste') }}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors {% if 'validation' in request.endpoint %}active{% endif %}">
-                            <i class="fas fa-check-circle w-5 text-center"></i>
-                            <span class="font-medium">Validations</span>
-                        </a>
+                        <!-- User / Direction / Chef links -->
+                        <div>
+                            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Principal</p>
+                            <div class="space-y-1">
+                                <a href="{{ url_for('dashboard.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span class="font-medium">Tableau de bord</span>
+                                </a>
+                                <a href="{{ url_for('chantiers.liste') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'chantiers' in request.endpoint %}active{% endif %}">
+                                    <i class="fas fa-building"></i>
+                                    <span class="font-medium">Mes Chantiers</span>
+                                </a>
+                                {% if role == 'direction' %}
+                                <a href="{{ url_for('validation.liste') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'validation' in request.endpoint %}active{% endif %}">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span class="font-medium">Validations</span>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Saisie Section for operational roles -->
+                        {% if role in ['chef_chantier', 'responsable_achats'] %}
+                        <div>
+                            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4">Saisies Rapides</p>
+                            <div class="space-y-1">
+                                <a href="{{ url_for('saisies.nouvel_achat') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if request.endpoint == 'saisies.nouvel_achat' %}active{% endif %}">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <span class="font-medium">Nouvel Achat</span>
+                                </a>
+                                {% if role == 'chef_chantier' %}
+                                <a href="{{ url_for('saisies.nouvelle_avance') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if request.endpoint == 'saisies.nouvelle_avance' %}active{% endif %}">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span class="font-medium">Nouvelle Avance</span>
+                                </a>
+                                <a href="{{ url_for('saisies.nouvelle_heure') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if request.endpoint == 'saisies.nouvelle_heure' %}active{% endif %}">
+                                    <i class="fas fa-clock"></i>
+                                    <span class="font-medium">Saisir Heures</span>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
                         {% endif %}
                     {% endif %}
                 {% endif %}
             </nav>
 
-            <!-- User Profile & Logout -->
+            <!-- User Profile -->
             {% if session.get('user_id') %}
-            <div class="p-4 border-t border-gray-200 bg-gray-50">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
+            <div class="p-4 border-t border-gray-100 bg-white">
+                <div class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div class="w-9 h-9 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold text-sm">
                         {{ session.get('user_nom', 'U')[0] }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">{{ session.get('user_nom') }}</p>
+                        <p class="text-sm font-medium text-gray-900 truncate group-hover:text-primary-700 transition-colors">
+                            {{ session.get('user_nom') }}
+                        </p>
                         <p class="text-xs text-gray-500 truncate capitalize">{{ session.get('user_role', 'Utilisateur')|replace('_', ' ') }}</p>
                     </div>
-                    <a href="{{ url_for('auth.logout') }}" class="p-2 text-gray-400 hover:text-red-600 transition-colors" title="Déconnexion">
+                    <a href="{{ url_for('auth.logout') }}" class="text-gray-400 hover:text-red-500 transition-colors" title="Déconnexion">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </div>
@@ -120,32 +195,64 @@
         </aside>
 
         <!-- Mobile Overlay -->
-        <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+        <div id="overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
 
         <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50">
             
-            <!-- Mobile Header -->
-            <header class="bg-white shadow-sm md:hidden flex items-center justify-between px-4 h-16 z-30">
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleSidebar()" class="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    <span class="font-bold text-gray-800 text-lg">Gestion Chantiers</span>
+            <!-- Top Header (Desktop & Mobile) -->
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+                <div class="flex items-center justify-between px-4 md:px-6 py-3 h-16">
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleSidebar()" class="md:hidden p-2 -ml-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+
+                        <!-- Page Title Breadcrumb style -->
+                        <div>
+                            <h2 class="text-lg md:text-xl font-bold text-gray-900">{% block page_title %}Gestion Chantiers{% endblock %}</h2>
+                            <p class="text-xs text-gray-500 hidden sm:block">{% block page_subtitle %}Plateforme de gestion opérationnelle{% endblock %}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <!-- Notifications -->
+                        <button class="p-2 text-gray-400 hover:text-primary-600 hover:bg-gray-100 rounded-lg relative transition-colors">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                        </button>
+
+                        <!-- Date -->
+                        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+                            <i class="far fa-calendar-alt text-gray-400"></i>
+                            <span class="text-sm text-gray-600 font-medium">
+                                {{ now().strftime('%d %b %Y') if now is defined else '' }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <!-- Optional: User avatar or notification icon on mobile right -->
             </header>
 
             <!-- Main Scrollable Area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-8">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 lg:p-8">
                 <div class="max-w-7xl mx-auto">
                     <!-- Flash Messages -->
                     {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                     <div class="mb-6 space-y-3">
                         {% for category, message in messages %}
-                        <div class="flex items-center p-4 rounded-lg shadow-sm border-l-4 {% if category == 'success' %}bg-green-50 text-green-800 border-green-500{% elif category == 'danger' %}bg-red-50 text-red-800 border-red-500{% elif category == 'warning' %}bg-yellow-50 text-yellow-800 border-yellow-500{% else %}bg-blue-50 text-blue-800 border-blue-500{% endif %}">
-                            <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'danger' %}fa-exclamation-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} mr-3 text-lg"></i>
+                        <div class="flex items-center gap-3 p-4 rounded-xl border-l-4 shadow-sm bg-white
+                            {% if category == 'success' %}border-green-500 text-green-800
+                            {% elif category == 'danger' %}border-red-500 text-red-800
+                            {% elif category == 'warning' %}border-yellow-500 text-yellow-800
+                            {% else %}border-blue-500 text-blue-800{% endif %}">
+
+                            <div class="flex-shrink-0">
+                                <i class="fas {% if category == 'success' %}fa-check-circle text-green-500
+                                          {% elif category == 'danger' %}fa-exclamation-circle text-red-500
+                                          {% elif category == 'warning' %}fa-exclamation-triangle text-yellow-500
+                                          {% else %}fa-info-circle text-blue-500{% endif %} text-xl"></i>
+                            </div>
                             <span class="font-medium">{{ message }}</span>
                         </div>
                         {% endfor %}
@@ -165,16 +272,8 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
-
-            if (sidebar.classList.contains('-translate-x-full')) {
-                // Open sidebar
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                // Close sidebar
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('hidden');
         }
 
         // Close sidebar when clicking a link on mobile
