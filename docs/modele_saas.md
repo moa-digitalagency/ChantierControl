@@ -1,60 +1,57 @@
 # Modèle SaaS et Multi-Tenancy
 
-Ce document explique le modèle économique et structurel de l'application en tant que Software as a Service (SaaS).
+Ce document détaille l'organisation de l'application en tant que service (SaaS) et la gestion de la multi-location.
 
-## Architecture Multi-Tenant
+## Architecture Multi-Tenant (Base de Données Partagée)
 
-L'application est conçue selon une architecture **Multi-Tenant (Multi-locataire) à base de données partagée**.
+L'application utilise une architecture **Multi-Tenant avec Base de Données Partagée**.
+Toutes les entreprises clientes (Tenants) cohabitent dans la même base de données et utilisent la même instance logicielle, mais leurs données sont logiquement isolées.
 
-### Principe
-Tous les clients (Entreprises) utilisent la même instance de l'application et la même base de données. Cependant, une séparation logique stricte est appliquée à chaque requête pour garantir l'étanchéité des données.
+### Isolation Logique
+L'isolation est garantie par l'attribut `entreprise_id`.
+*   **Utilisateurs** : Chaque utilisateur est lié à une seule entreprise (`users.entreprise_id`).
+*   **Données** : Toutes les entités métier (`Chantier`, `Achat`, `Heure`, etc.) sont filtrées par l'entreprise de l'utilisateur connecté.
+*   **Sécurité** : Le middleware et les décorateurs (`@login_required`) empêchent toute requête cross-tenant. Un Admin de l'Entreprise A ne peut techniquement pas accéder à l'ID d'un chantier de l'Entreprise B.
 
-*   Chaque table majeure (`User`, `Chantier`, `Achat`, etc.) contient (directement ou par cascade) une référence à l'`entreprise_id`.
-*   Le code de l'application filtre systématiquement les requêtes SQL pour n'inclure que les données de l'entreprise de l'utilisateur connecté.
+## Gestion Commerciale et Administrative
 
-### Avantages
-1.  **Maintenance Simplifiée** : Une seule mise à jour du code profite à tous les clients instantanément.
-2.  **Infrastructure Unique** : Pas besoin de déployer un serveur par client.
-3.  **Onboarding Rapide** : Créer un nouveau client prend quelques secondes (création d'une entrée en base de données).
+Le modèle repose sur une hiérarchie stricte permettant la gestion centralisée de la plateforme.
 
-## Gestion des Abonnements (Business)
+### 1. Le Super Admin (Propriétaire du SaaS)
+Il possède les droits "Dieu" sur la plateforme, mais pas sur les données métier.
+*   **Onboarding** : Crée les nouvelles entreprises clientes.
+*   **Cycle de vie** :
+    *   **Activation** : L'entreprise est créée avec `actif=True`. Ses utilisateurs peuvent se connecter.
+    *   **Suspension** : En cas d'impayé ou fin de contrat, le Super Admin passe `actif=False`. L'accès est instantanément bloqué pour *tous* les utilisateurs de cette entreprise.
+    *   **Suppression** : Possible mais déconseillée (archivage préférable).
+*   **Configuration** : Définit les variables globales (SEO, Nom de l'app).
 
-Bien que le module de paiement ne soit pas (encore) intégré directement dans le code, la structure de la base de données est prête pour la gestion commerciale.
-
-### Cycle de Vie Client
-
-1.  **Prospection / Création** :
-    *   Le Super Admin crée l'entreprise dans le système.
-    *   L'état est défini sur `Actif`.
-    *   Le client peut commencer immédiatement.
-
-2.  **Suspension** :
-    *   En cas de non-paiement ou de fin de contrat, le Super Admin peut passer l'indicateur `actif` de l'entreprise à `False`.
-    *   **Conséquence** : Plus aucun utilisateur de cette entreprise ne peut se connecter. Les données sont conservées mais inaccessibles.
-
-3.  **Réactivation** :
-    *   Le passage à `actif = True` rétablit l'accès instantanément.
+### 2. L'Entreprise (Client)
+L'entité facturable.
+*   Possède un **Administrateur Principal** (créé par le Super Admin).
+*   Gère ses propres utilisateurs et chantiers de manière autonome.
+*   N'a aucune visibilité sur les autres entreprises.
 
 ## Hiérarchie des Données
 
-```text
-PLATEFORME (SaaS Provider)
-└── Super Admin (Vous)
-    │
-    ├── ENTREPRISE A (Client A)
-    │   ├── Admin A (Patron)
-    │   ├── Chantier A1
-    │   │   ├── Dépenses
-    │   │   └── Chefs de chantier
-    │   └── Chantier A2
-    │
-    └── ENTREPRISE B (Client B)
-        ├── Admin B (Patron)
-        └── Chantier B1
+```mermaid
+graph TD
+    SA[Super Admin] -->|Gère| E1[Entreprise A]
+    SA -->|Gère| E2[Entreprise B]
+
+    subgraph "Isolation stricte"
+        E1 -->|Contient| U1[Utilisateurs A]
+        E1 -->|Contient| C1[Chantiers A]
+        U1 -->|Gèrent| C1
+
+        E2 -->|Contient| U2[Utilisateurs B]
+        E2 -->|Contient| C2[Chantiers B]
+        U2 -->|Gèrent| C2
+    end
 ```
 
-## Sécurité et Isolation
+## Avantages du Modèle
 
-L'isolation est garantie par le backend :
-*   Un utilisateur est lié définitivement à une entreprise à sa création via `entreprise_id`.
-*   Il est impossible pour un utilisateur "Admin" de voir les données d'une autre entreprise, car toutes les requêtes de lecture/écriture vérifient cet ID.
+1.  **Maintenance** : Une seule mise à jour de code impacte tous les clients.
+2.  **Scalabilité** : Ajouter un client est une opération instantanée (INSERT SQL).
+3.  **Coût** : Infrastructure mutualisée (un seul serveur, une seule BDD).

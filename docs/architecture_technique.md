@@ -1,106 +1,97 @@
 # Architecture Technique
 
-Ce document détaille l'architecture technique de l'application SaaS de Gestion de Chantiers.
+Ce document détaille les composants techniques, le modèle de données et les flux de l'application SaaS.
 
 ## Stack Technique
 
-L'application est construite sur une stack Python robuste et standardisée :
+Application Python/Flask monolithique modulaire.
 
-*   **Langage** : Python 3.12+
-*   **Framework Web** : Flask (Utilisation de Blueprints pour la modularité)
-*   **ORM (Object Relational Mapper)** : SQLAlchemy (via Flask-SQLAlchemy)
-*   **Base de Données** : PostgreSQL (Production) / SQLite (Développement)
-*   **Moteur de Templates** : Jinja2 (Rendu côté serveur)
-*   **Frontend** : HTML5, CSS3 (Tailwind CSS suggéré par la structure), JavaScript (Vanilla)
-*   **Serveur WSGI** : Gunicorn (Recommandé pour la production)
+*   **Backend** : Python 3.12+
+*   **Framework** : Flask
+*   **ORM** : SQLAlchemy (via Flask-SQLAlchemy)
+*   **Base de Données** : PostgreSQL (Production) / SQLite (Dev)
+*   **Frontend** : Templates Jinja2 (Server-Side Rendering) + HTML5/CSS3 + JS Vanilla.
+*   **Services Tiers** :
+    *   Génération PDF : `ReportLab` ou équivalent (via `services/pdf_service.py`).
+    *   Stockage Fichiers : Local (dossier `static/uploads` ou similaire) pour les justificatifs.
 
-## Structure du Projet
+## Structure du Code
 
-L'application suit une architecture modulaire basée sur les **Blueprints** Flask.
+L'application est découpée en **Blueprints** Flask pour séparer les responsabilités par domaine métier.
 
 ```text
 /
-├── app.py                 # Point d'entrée de l'application
-├── config/                # Configuration (Variables d'environnement)
-├── docs/                  # Documentation technique et fonctionnelle
-├── models/                # Définitions des modèles de données (SQLAlchemy)
-├── routes/                # Contrôleurs (Logique métier par fonctionnalité)
-│   ├── auth.py            # Authentification
-│   ├── superadmin.py      # Espace Super Admin (SaaS)
-│   ├── admin.py           # Espace Admin Entreprise
-│   ├── chantiers.py       # Gestion des chantiers
-│   ├── saisies.py         # Saisie des dépenses/heures
-│   ├── validation.py      # Workflow de validation
-│   └── ...
-├── services/              # Logique métier complexe (si séparée des routes)
-├── static/                # Fichiers statiques (CSS, JS, Images)
-├── templates/             # Vues HTML (Jinja2)
-└── utils/                 # Fonctions utilitaires
+├── app.py                 # Factory, Configuration DB, Register Blueprints
+├── models/                # Modèles SQLAlchemy (Single file currently)
+│   └── __init__.py        # Définition de toutes les classes (User, Chantier, etc.)
+├── routes/                # Contrôleurs (Vues)
+│   ├── auth.py            # Login/Logout
+│   ├── admin.py           # Gestion Entreprise (Users, Chantiers)
+│   ├── chantiers.py       # Détails, Assignations, Rapports
+│   ├── saisies.py         # Formulaires (Achats, Heures, Avances)
+│   └── validation.py      # Workflow de validation Direction
+├── services/              # Logique métier pure
+│   ├── notification_service.py # Gestion des alertes
+│   └── pdf_service.py     # Moteur de rapport
+└── static/                # Assets publics
 ```
 
-## Schéma de Base de Données
+## Modèle de Données (Schema)
 
-Le modèle de données est relationnel et centré sur l'entité `Entreprise` (Multi-tenant).
+Le schéma est conçu pour le **Multi-Tenancy** strict.
 
-### Entités Principales
+### Cœur du Système
+1.  **Entreprise** : Le Tenant.
+    *   `admin_principal_id` : Clé étrangère vers `User` (Gérée avec `use_alter=True` pour éviter la dépendance circulaire).
+2.  **User** : L'utilisateur.
+    *   `entreprise_id` : Partitionne les données. Un user appartient à une seule entreprise.
+    *   `role` : `super_admin`, `admin`, `direction`, `chef_chantier`, `responsable_achats`.
+    *   Auth : `telephone` (Unique) + `pin_hash` (PBKDF2 ou Scrypt).
 
-1.  **AppSettings**
-    *   Stockage clé-valeur pour la configuration dynamique de l'application (SEO, Seuils d'alerte, Contact).
+### Opérationnel
+3.  **Chantier** : Projet financier.
+    *   Lié à `Entreprise`.
+    *   Budget prévisionnel (Float).
+4.  **ChantierAssignment** : Table de liaison `User` <-> `Chantier`.
+    *   Définit quels chantiers sont visibles pour un utilisateur "terrain".
+    *   Attribut `actif` (Boolean) pour gérer l'historique sans supprimer.
 
-2.  **Entreprise**
-    *   Représente le client (Tenant).
-    *   Contient les informations de facturation et de contact.
-    *   Relation : 1 Entreprise -> N Users, N Chantiers.
-    *   *Note* : Possède une clé étrangère circulaire `admin_principal_id` vers `User` (gérée avec `use_alter=True`).
+### Flux Financiers (Transactions)
+Toutes les transactions (`Achat`, `Avance`, `Heure`) partagent des états communs :
+*   `statut` : `en_attente` -> `valide` | `refuse`.
+*   `valide_par_id` : Traçabilité du validateur.
+*   `photo_justificatif` : Chemin vers le fichier (Obligatoire si montant > 500 sur Achat).
 
-3.  **User**
-    *   Utilisateurs de la plateforme.
-    *   Authentification via `telephone` (unique) et `pin_hash`.
-    *   Rôles : `super_admin`, `admin`, `user` (avec sous-rôles fonctionnels).
-    *   Relation : Appartient à une `Entreprise` (sauf Super Admin).
+## Algorithmes et Services
 
-4.  **Chantier**
-    *   Le cœur opérationnel.
-    *   Stocke la localisation (GPS) et le budget prévisionnel.
-    *   Relation : Appartient à une `Entreprise`.
+### Calcul des KPI
+*   Calculé à la volée lors de l'affichage du Dashboard Chantier.
+*   **Consommation** : `Sum(Achats validés + Heures validées) / Budget`.
 
-5.  **ChantierAssignment**
-    *   Table de liaison pour assigner des utilisateurs spécifiques à des chantiers.
-    *   Permet de restreindre la vue des chefs de chantier/acheteurs.
+### Système d'Alertes (`services/notification_service.py`)
+*   Déclenché via `process_alerts(chantier_id)` après chaque validation financière.
+*   Vérifie si `Dépenses / Budget > Seuil (ex: 80%, 100%)`.
+*   Crée une entrée en base `Alerte`.
 
-### Entités Opérationnelles (Flux Financier)
-
-Ces entités tracent l'activité sur les chantiers. Elles sont toutes liées à un `Chantier` et à un `User` (créateur).
-
-6.  **Achat** : Dépenses matérielles/fournisseurs. Inclut photo justificative.
-7.  **Avance** : Demandes d'argent liquide.
-8.  **Heure** : Suivi de la main d'œuvre (Quantité x Tarif).
-
-### Entités de Contrôle
-
-9.  **Alerte** : Notifications système (Dépassement budget, etc.).
+### Génération de Rapports
+*   Route : `/chantiers/<id>/rapport`
+*   Génère un PDF binaire à la volée contenant le résumé financier et la liste des dernières dépenses.
 
 ## Sécurité
 
-### Authentification
-*   Système sans mot de passe complexe : **Numéro de téléphone + Code PIN (4 chiffres)**.
-*   Protection contre la force brute : Rate limiting implémenté en mémoire (5 essais / 15 min par IP).
-*   Hashage des PINs avant stockage (Sécurité critique).
-
-### Contrôle d'Accès (RBAC)
-*   Les décorateurs (`@login_required`, `@super_admin_required`) protègent les routes.
-*   Cloisonnement des données : Un utilisateur ne voit que les données de son `entreprise_id`.
+1.  **Isolation des Données** :
+    *   Toutes les requêtes ORM filtrent par `current_user.entreprise_id`.
+    *   Middleware/Décorateur vérifie l'appartenance de l'objet (Chantier/User) à l'entreprise de l'utilisateur connecté.
+2.  **Uploads** :
+    *   Vérification des extensions (JPG, PNG, GIF).
+    *   Renommage sécurisé des fichiers pour éviter les collisions et les injections.
+3.  **Protection Brute-Force** :
+    *   Limitation des tentatives de login (Rate Limiting mémoire).
 
 ## Déploiement
 
-L'application est conçue pour être "12-factor app compliant". La configuration passe par des variables d'environnement.
-
-### Variables Critiques
-*   `DATABASE_URL` : Chaîne de connexion BDD.
-*   `SECRET_KEY` : Signature des sessions Flask.
-*   `SUPER_ADMIN_*` : Variables utilisées par `init_db.py` pour le bootstrapping (création du premier compte).
-
-### Initialisation
-Le script `init_db.py` gère :
-1.  La création des tables.
-2.  L'injection du compte Super Admin initial (idempotent).
+*   **Variables d'Environnement** :
+    *   `DATABASE_URL` : PostgreSQL connection string.
+    *   `SECRET_KEY` : Flask session signing.
+*   **Initialisation** :
+    *   `python init_db.py` : Crée les tables et le premier Super Admin si inexistant.
