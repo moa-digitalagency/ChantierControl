@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
-    <title>{% block title %}Super Admin{% endblock %} - Gestion Chantiers</title>
+    <title>{% block title %}{{ t('superadmin_role_label') }}{% endblock %} - {{ t('header_platform_title') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -60,50 +60,57 @@
                         <i class="fas fa-hard-hat text-white text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-gray-900">Gestion Chantiers</h1>
-                        <span class="text-xs text-primary-600 font-medium">Super Admin</span>
+                        <h1 class="font-bold text-gray-900">{{ t('header_platform_title') }}</h1>
+                        <span class="text-xs text-primary-600 font-medium">{{ t('superadmin_role_label') }}</span>
                     </div>
                 </div>
                 
                 <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                     <div class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        Principal
+                        {{ t('superadmin_sidebar_main') }}
                     </div>
                     <a href="{{ url_for('superadmin.index') }}" 
                        class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if request.endpoint == 'superadmin.index' %}active{% endif %}">
                         <i class="fas fa-chart-pie w-5 text-center text-primary-500"></i>
-                        <span class="font-medium">Dashboard</span>
+                        <span class="font-medium">{{ t('superadmin_sidebar_dashboard') }}</span>
                     </a>
                     
                     <div class="px-3 py-2 mt-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        Gestion
+                        {{ t('superadmin_sidebar_gestion') }}
                     </div>
                     <a href="{{ url_for('superadmin.liste_entreprises') }}" 
                        class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if 'entreprise' in request.endpoint %}active{% endif %}">
                         <i class="fas fa-building w-5 text-center text-blue-500"></i>
-                        <span class="font-medium">Entreprises</span>
+                        <span class="font-medium">{{ t('superadmin_sidebar_companies') }}</span>
                     </a>
                     <a href="{{ url_for('superadmin.liste_admins') }}" 
                        class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if 'admin' in request.endpoint %}active{% endif %}">
                         <i class="fas fa-user-shield w-5 text-center text-green-500"></i>
-                        <span class="font-medium">Administrateurs</span>
+                        <span class="font-medium">{{ t('superadmin_sidebar_admins') }}</span>
                     </a>
                     
                     <div class="px-3 py-2 mt-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        Configuration
+                        {{ t('superadmin_sidebar_config') }}
                     </div>
                     <a href="{{ url_for('superadmin.parametres') }}" 
                        class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if request.endpoint == 'superadmin.parametres' %}active{% endif %}">
                         <i class="fas fa-cog w-5 text-center text-gray-500"></i>
-                        <span class="font-medium">Paramètres</span>
+                        <span class="font-medium">{{ t('superadmin_sidebar_params') }}</span>
                     </a>
                     <a href="{{ url_for('superadmin.seo') }}" 
                        class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-700 transition-all duration-200 {% if request.endpoint == 'superadmin.seo' %}active{% endif %}">
                         <i class="fas fa-search w-5 text-center text-orange-500"></i>
-                        <span class="font-medium">SEO</span>
+                        <span class="font-medium">{{ t('superadmin_sidebar_seo') }}</span>
                     </a>
                 </nav>
                 
+                <div class="px-4 pb-2 bg-white">
+                    <div class="flex gap-2 mb-2 justify-center">
+                        <a href="{{ url_for('set_language', lang_code='fr') }}" class="text-xs px-2 py-1 rounded border {% if current_lang == 'fr' %}bg-primary-50 text-primary-600 border-primary-200{% else %}text-gray-500 border-gray-200 hover:bg-gray-50{% endif %}">FR</a>
+                        <a href="{{ url_for('set_language', lang_code='en') }}" class="text-xs px-2 py-1 rounded border {% if current_lang == 'en' %}bg-primary-50 text-primary-600 border-primary-200{% else %}text-gray-500 border-gray-200 hover:bg-gray-50{% endif %}">EN</a>
+                    </div>
+                </div>
+
                 <div class="p-4 border-t border-gray-100">
                     <div class="flex items-center gap-3 px-3 py-2">
                         <div class="w-9 h-9 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
@@ -115,9 +122,9 @@
                             <p class="text-sm font-medium text-gray-900 truncate">
                                 {{ session.get('user_prenom', '') }} {{ session.get('user_nom', '') }}
                             </p>
-                            <p class="text-xs text-gray-500 truncate">Super Administrateur</p>
+                            <p class="text-xs text-gray-500 truncate">{{ t('superadmin_profile_role') }}</p>
                         </div>
-                        <a href="{{ url_for('auth.logout') }}" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Déconnexion">
+                        <a href="{{ url_for('auth.logout') }}" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="{{ t('header_logout') }}">
                             <i class="fas fa-sign-out-alt"></i>
                         </a>
                     </div>
@@ -135,8 +142,8 @@
                             <i class="fas fa-bars text-lg"></i>
                         </button>
                         <div>
-                            <h2 class="text-xl font-bold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h2>
-                            <p class="text-sm text-gray-500 hidden sm:block">{% block page_subtitle %}Vue d'ensemble de la plateforme{% endblock %}</p>
+                            <h2 class="text-xl font-bold text-gray-900">{% block page_title %}{{ t('superadmin_header_dashboard') }}{% endblock %}</h2>
+                            <p class="text-sm text-gray-500 hidden sm:block">{% block page_subtitle %}{{ t('superadmin_header_subtitle') }}{% endblock %}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">

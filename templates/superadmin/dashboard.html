@@ -1,19 +1,19 @@
 {% extends 'superadmin/base_superadmin.html' %}
-{% block title %}Dashboard{% endblock %}
-{% block page_title %}Dashboard{% endblock %}
-{% block page_subtitle %}Vue d'ensemble de la plateforme{% endblock %}
+{% block title %}{{ t('superadmin_dashboard_title') }}{% endblock %}
+{% block page_title %}{{ t('superadmin_dashboard_title') }}{% endblock %}
+{% block page_subtitle %}{{ t('superadmin_dashboard_subtitle') }}{% endblock %}
 
 {% block content %}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
     <div class="bg-white rounded-2xl card-shadow p-5 border border-gray-100">
         <div class="flex items-start justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">Entreprises</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">{{ t('superadmin_stats_companies') }}</p>
                 <p class="text-3xl font-bold text-gray-900">{{ stats.nb_entreprises }}</p>
                 <p class="text-xs text-gray-400 mt-2">
                     <span class="inline-flex items-center text-green-600">
                         <i class="fas fa-circle text-[6px] mr-1"></i>
-                        {{ stats.nb_entreprises_actives }} actives
+                        {{ stats.nb_entreprises_actives }} {{ t('superadmin_stats_active') }}
                     </span>
                 </p>
             </div>
@@ -26,12 +26,12 @@
     <div class="bg-white rounded-2xl card-shadow p-5 border border-gray-100">
         <div class="flex items-start justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">Administrateurs</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">{{ t('superadmin_stats_admins') }}</p>
                 <p class="text-3xl font-bold text-gray-900">{{ stats.nb_admins }}</p>
                 <p class="text-xs text-gray-400 mt-2">
                     <span class="inline-flex items-center text-blue-600">
                         <i class="fas fa-shield-alt text-[8px] mr-1"></i>
-                        Admins actifs
+                        {{ t('superadmin_stats_active_admins') }}
                     </span>
                 </p>
             </div>
@@ -44,12 +44,12 @@
     <div class="bg-white rounded-2xl card-shadow p-5 border border-gray-100">
         <div class="flex items-start justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">Utilisateurs</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">{{ t('superadmin_stats_users') }}</p>
                 <p class="text-3xl font-bold text-gray-900">{{ stats.nb_users }}</p>
                 <p class="text-xs text-gray-400 mt-2">
                     <span class="inline-flex items-center text-indigo-600">
                         <i class="fas fa-users text-[8px] mr-1"></i>
-                        Tous rôles
+                        {{ t('superadmin_stats_all_roles') }}
                     </span>
                 </p>
             </div>
@@ -62,12 +62,12 @@
     <div class="bg-white rounded-2xl card-shadow p-5 border border-gray-100">
         <div class="flex items-start justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500 mb-1">Chantiers</p>
+                <p class="text-sm font-medium text-gray-500 mb-1">{{ t('superadmin_stats_sites') }}</p>
                 <p class="text-3xl font-bold text-gray-900">{{ stats.nb_chantiers }}</p>
                 <p class="text-xs text-gray-400 mt-2">
                     <span class="inline-flex items-center text-emerald-600">
                         <i class="fas fa-hard-hat text-[8px] mr-1"></i>
-                        {{ stats.nb_chantiers_en_cours }} en cours
+                        {{ stats.nb_chantiers_en_cours }} {{ t('superadmin_stats_ongoing') }}
                     </span>
                 </p>
             </div>
@@ -85,12 +85,12 @@
                 <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                     <i class="fas fa-credit-card text-red-600 text-sm"></i>
                 </div>
-                <h3 class="font-semibold text-gray-900">Total Dépenses</h3>
+                <h3 class="font-semibold text-gray-900">{{ t('superadmin_total_expenses') }}</h3>
             </div>
         </div>
         <div class="p-6">
             <p class="text-4xl font-bold text-gray-900 mb-2">{{ format_currency(stats.total_depenses) }}</p>
-            <p class="text-sm text-gray-500">Toutes entreprises confondues</p>
+            <p class="text-sm text-gray-500">{{ t('superadmin_all_companies') }}</p>
             <div class="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div class="h-full bg-gradient-to-r from-red-500 to-orange-500 rounded-full" style="width: 65%"></div>
             </div>
@@ -103,12 +103,12 @@
                 <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
                     <i class="fas fa-money-bill-wave text-amber-600 text-sm"></i>
                 </div>
-                <h3 class="font-semibold text-gray-900">Total Avances</h3>
+                <h3 class="font-semibold text-gray-900">{{ t('superadmin_total_advances') }}</h3>
             </div>
         </div>
         <div class="p-6">
             <p class="text-4xl font-bold text-gray-900 mb-2">{{ format_currency(stats.total_avances) }}</p>
-            <p class="text-sm text-gray-500">Avances versées aux équipes</p>
+            <p class="text-sm text-gray-500">{{ t('superadmin_team_advances') }}</p>
             <div class="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div class="h-full bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full" style="width: 45%"></div>
             </div>
@@ -123,10 +123,10 @@
                 <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                     <i class="fas fa-building text-purple-600 text-sm"></i>
                 </div>
-                <h3 class="font-semibold text-gray-900">Entreprises Récentes</h3>
+                <h3 class="font-semibold text-gray-900">{{ t('superadmin_recent_companies') }}</h3>
             </div>
             <a href="{{ url_for('superadmin.liste_entreprises') }}" class="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
-                Voir tout <i class="fas fa-arrow-right text-xs"></i>
+                {{ t('superadmin_view_all') }} <i class="fas fa-arrow-right text-xs"></i>
             </a>
         </div>
         <div class="divide-y divide-gray-100">
@@ -144,13 +144,13 @@
                                     <i class="fas fa-user-shield text-xs mr-1"></i>
                                     {{ e.admin_principal.prenom }} {{ e.admin_principal.nom }}
                                 {% else %}
-                                    <span class="text-amber-600"><i class="fas fa-exclamation-triangle text-xs mr-1"></i> Pas d'admin</span>
+                                    <span class="text-amber-600"><i class="fas fa-exclamation-triangle text-xs mr-1"></i> {{ t('superadmin_no_admin') }}</span>
                                 {% endif %}
                             </p>
                         </div>
                     </div>
                     <span class="px-3 py-1 text-xs font-medium rounded-full {% if e.actif %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
-                        {{ 'Actif' if e.actif else 'Inactif' }}
+                        {{ t('superadmin_status_active') if e.actif else t('superadmin_status_inactive') }}
                     </span>
                 </div>
                 {% endfor %}
@@ -159,9 +159,9 @@
                     <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-building text-gray-400 text-2xl"></i>
                     </div>
-                    <p class="text-gray-500">Aucune entreprise créée</p>
+                    <p class="text-gray-500">{{ t('superadmin_no_companies') }}</p>
                     <a href="{{ url_for('superadmin.nouvelle_entreprise') }}" class="mt-4 inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium">
-                        <i class="fas fa-plus"></i> Créer une entreprise
+                        <i class="fas fa-plus"></i> {{ t('superadmin_create_company') }}
                     </a>
                 </div>
             {% endif %}
@@ -174,7 +174,7 @@
                 <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                     <i class="fas fa-bolt text-gray-600 text-sm"></i>
                 </div>
-                <h3 class="font-semibold text-gray-900">Actions Rapides</h3>
+                <h3 class="font-semibold text-gray-900">{{ t('superadmin_quick_actions') }}</h3>
             </div>
         </div>
         <div class="p-4 space-y-3">
@@ -183,8 +183,8 @@
                     <i class="fas fa-plus text-white"></i>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">Nouvelle Entreprise</p>
-                    <p class="text-sm text-gray-500">Ajouter avec son admin</p>
+                    <p class="font-semibold text-gray-900">{{ t('superadmin_new_company') }}</p>
+                    <p class="text-sm text-gray-500">{{ t('superadmin_add_with_admin') }}</p>
                 </div>
             </a>
             
@@ -193,8 +193,8 @@
                     <i class="fas fa-sliders-h text-white"></i>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">Paramètres</p>
-                    <p class="text-sm text-gray-500">Configuration globale</p>
+                    <p class="font-semibold text-gray-900">{{ t('superadmin_sidebar_params') }}</p>
+                    <p class="text-sm text-gray-500">{{ t('superadmin_global_config') }}</p>
                 </div>
             </a>
             
@@ -203,8 +203,8 @@
                     <i class="fas fa-search text-white"></i>
                 </div>
                 <div>
-                    <p class="font-semibold text-gray-900">Paramètres SEO</p>
-                    <p class="text-sm text-gray-500">Référencement web</p>
+                    <p class="font-semibold text-gray-900">{{ t('superadmin_seo_params') }}</p>
+                    <p class="text-sm text-gray-500">{{ t('superadmin_seo_desc') }}</p>
                 </div>
             </a>
         </div>
