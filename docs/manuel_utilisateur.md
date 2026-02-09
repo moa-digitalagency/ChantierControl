@@ -1,92 +1,94 @@
 # Manuel Utilisateur
 
-Ce manuel vous guide pas à pas dans l'utilisation de l'application, selon votre rôle.
+Ce document sert de guide pratique pour utiliser l'application au quotidien. Il est structuré par rôle.
 
-## Connexion
+## Accès et Connexion
 
-L'accès à l'application est simplifié et sécurisé.
-1.  Ouvrez l'application sur votre navigateur (Mobile ou PC).
-2.  Entrez votre **Numéro de Téléphone** (celui communiqué à votre administrateur).
-3.  Entrez votre **Code PIN** (4 chiffres).
-4.  Cliquez sur "Se connecter".
+L'application est accessible via navigateur web (compatible mobile et desktop).
 
----
+1.  **URL** : Accédez à l'adresse fournie par votre administrateur.
+2.  **Identifiant** : Entrez votre numéro de téléphone (format national, sans espaces).
+3.  **Authentification** : Saisissez votre code PIN personnel à 4 chiffres.
+4.  **Validation** : Cliquez sur "Se connecter".
 
-## 1. Je suis Super Admin
-
-Votre rôle est de gérer les clients (Entreprises) de la plateforme.
-
-### Créer une nouvelle Entreprise
-1.  Allez dans le menu **Entreprises**.
-2.  Cliquez sur **"Nouvelle Entreprise"**.
-3.  Remplissez les informations de la société (Nom, Adresse).
-4.  **Important** : Vous devez créer immédiatement le premier Administrateur pour cette entreprise (Nom, Téléphone, PIN).
-5.  Validez. L'entreprise et son admin sont créés.
-
-### Gérer les Paramètres Globaux
-1.  Allez dans **Paramètres**.
-2.  Vous pouvez ici définir les textes SEO, le nom de l'application, et les seuils d'alerte par défaut pour toutes les nouvelles entreprises.
+*En cas d'oubli du code PIN, contactez votre administrateur d'entreprise.*
 
 ---
 
-## 2. Je suis Administrateur d'Entreprise
+## 1. Rôle : Super Admin
 
-Vous gérez votre société. Votre première tâche est de configurer votre équipe et vos chantiers.
+Vous gérez l'infrastructure multi-clients.
 
-### Étape 1 : Créer vos Utilisateurs
-1.  Allez dans le menu **Utilisateurs**.
-2.  Cliquez sur **"Ajouter un utilisateur"**.
-3.  Remplissez la fiche (Nom, Prénom, Téléphone, PIN).
-4.  Choisissez son rôle (ex: Chef de Chantier, Acheteur, Direction).
+### Gestion des Entreprises
+*   **Créer** : Menu "Entreprises" > "Nouvelle Entreprise". Renseignez le Nom et l'Adresse.
+*   **Activer/Suspendre** : Le bouton "Toggle" permet de couper l'accès à une entreprise instantanément (ex: défaut de paiement).
+*   **Premier Admin** : À la création d'une entreprise, vous devez obligatoirement créer son premier compte Administrateur.
 
-### Étape 2 : Créer un Chantier
-1.  Allez dans le menu **Chantiers**.
-2.  Cliquez sur **"Nouveau Chantier"**.
-3.  Indiquez le Nom, l'Adresse, et surtout le **Budget Prévisionnel**.
-4.  Une fois créé, vous devez **Assigner** des utilisateurs à ce chantier pour qu'ils puissent y accéder.
-
-### Étape 3 : Assigner du personnel
-1.  Sur la fiche du chantier, section "Équipe".
-2.  Sélectionnez les utilisateurs qui travailleront sur ce projet.
+### Configuration Globale
+*   **Paramètres** : Définissez les variables d'environnement visibles (Nom de l'app, SEO).
 
 ---
 
-## 3. Je suis Chef de Chantier / Acheteur
+## 2. Rôle : Administrateur d'Entreprise
 
-Votre rôle est de remonter les informations du terrain.
+Vous pilotez votre organisation. Vous ne saisissez pas de dépenses, vous structurez l'outil.
 
-### Saisir une Dépense (Achat)
-1.  Sur votre Tableau de Bord, choisissez le Chantier concerné.
-2.  Cliquez sur **"Nouvel Achat"**.
-3.  Remplissez le montant, la date et le fournisseur.
-4.  **Photo** : Prenez en photo le ticket de caisse ou la facture. C'est obligatoire pour la validation.
-5.  Validez. La dépense part en validation.
+### Gestion des Utilisateurs
+1.  Menu **Utilisateurs** > **Ajouter un utilisateur**.
+2.  Renseignez : Nom, Prénom, Téléphone (Unique), Code PIN (4 chiffres).
+3.  **Attribuez le rôle** :
+    *   *Direction* : Peut tout voir et tout valider.
+    *   *Chef de Chantier* : Peut saisir tout type de dépense sur ses chantiers.
+    *   *Responsable Achats* : Peut saisir des achats, mais pas d'heures ni d'avances.
 
-### Saisir des Heures
-1.  Cliquez sur **"Saisie Heures"**.
-2.  Indiquez le nombre d'heures et le coût unitaire (ou le coût total selon la configuration).
-3.  Ajoutez un commentaire si nécessaire (ex: "Coulage dalle").
-
-### Demander une Avance
-1.  Si vous avez besoin de liquidités, utilisez **"Demande Avance"**.
-2.  Indiquez le montant souhaité.
-3.  Une fois l'argent reçu et dépensé, vous devrez justifier ce montant via des saisies d'Achats.
+### Gestion des Chantiers
+1.  Menu **Chantiers** > **Nouveau Chantier**.
+2.  Renseignez : Nom, Adresse, Coordonnées GPS (optionnel), **Budget Prévisionnel**.
+3.  **Assignation (Critique)** : Par défaut, personne ne voit le chantier. Allez dans la fiche du chantier > Section "Équipe" > "Assigner". Sélectionnez les utilisateurs autorisés.
 
 ---
 
-## 4. Je suis Direction (Validation)
+## 3. Rôle : Chef de Chantier / Opérationnel
 
-Votre rôle est de contrôler les flux financiers.
+Vous êtes sur le terrain. Votre interface est simplifiée pour la saisie mobile.
 
-### Valider les Saisies
-1.  Sur votre Tableau de Bord, une section **"À Valider"** apparaît s'il y a des éléments en attente.
-2.  Cliquez sur une ligne pour voir le détail (et la photo du justificatif).
-3.  Cliquez sur **"Valider"** pour accepter la dépense (elle sera déduite du budget).
-4.  Cliquez sur **"Refuser"** si le justificatif n'est pas conforme.
+### Saisir un Achat (Matériaux/Fournitures)
+1.  Sélectionnez le chantier actif.
+2.  Bouton **"Nouvel Achat"**.
+3.  Remplissez : Date, Fournisseur, Montant.
+4.  **Justificatif** :
+    *   Cliquez sur "Photo" pour prendre le ticket en photo ou choisir un fichier.
+    *   Formats acceptés : JPG, PNG, GIF.
+    *   **Règle** : Si Montant > 500 MAD, la photo est **obligatoire**.
+5.  Validez.
 
-### Suivre le Budget
-1.  Consultez le **Tableau de Bord** général ou celui d'un chantier spécifique.
-2.  Les jauges de couleur vous indiquent la santé financière du projet.
-    *   **Vert** : Tout va bien.
-    *   **Orange** : Budget bientôt atteint.
-    *   **Rouge** : Budget dépassé.
+### Saisir des Heures (Main d'œuvre)
+1.  Bouton **"Saisie Heures"**.
+2.  Renseignez : Date, Nombre d'heures, Taux horaire.
+3.  Le coût total est calculé automatiquement.
+4.  Validez.
+
+### Demander une Avance (Trésorerie)
+*Note : Non disponible pour le rôle Responsable Achats.*
+1.  Bouton **"Demande Avance"**.
+2.  Indiquez le montant souhaité et la date.
+3.  Une fois validée par la direction, cette somme vous est attribuée. Vous devrez ensuite la justifier par des "Achats".
+
+---
+
+## 4. Rôle : Direction (Validation)
+
+Vous contrôlez les flux financiers et analysez la rentabilité.
+
+### Validation des Dépenses
+Le menu "Validation" centralise toutes les saisies en attente.
+1.  Examinez la ligne (cliquez pour voir la photo).
+2.  **Valider** : La dépense est acceptée et déduite du budget du chantier.
+3.  **Refuser** : Vous **devez** saisir un motif de refus. La dépense est rejetée et archivée.
+
+### Suivi et Reporting
+*   **Tableau de Bord** : Visualisez en un coup d'œil les chantiers en alerte (Budget consommé > 80%).
+*   **Fiche Chantier** :
+    *   Consultez le graphique de consommation budgétaire.
+    *   Visualisez la liste des derniers achats validés.
+    *   **Export PDF** : Cliquez sur "Générer Rapport" pour télécharger un document complet de la situation financière du chantier.

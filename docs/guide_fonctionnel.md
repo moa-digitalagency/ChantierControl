@@ -1,70 +1,84 @@
 # Guide Fonctionnel
 
-Ce document décrit les fonctionnalités et la logique métier de l'application de Gestion de Chantiers.
+Ce document décrit en détail les fonctionnalités et la logique métier de l'application de Gestion de Chantiers. Il sert de référence pour comprendre le fonctionnement global du système.
 
 ## Vue d'Ensemble
 
-L'application est une plateforme SaaS (Software as a Service) destinée aux entreprises du BTP. Elle permet de décentraliser la saisie des informations (dépenses, heures) directement sur le terrain tout en centralisant le contrôle financier au niveau de la direction.
+L'application est une plateforme SaaS (Software as a Service) conçue pour les entreprises du BTP. Son objectif est de décentraliser la saisie des données financières (dépenses, heures) directement sur le terrain via mobile, tout en centralisant le contrôle et la validation au siège.
 
-## Structure Hiérarchique (SaaS)
+## Structure Hiérarchique et Rôles
 
-L'application fonctionne sur trois niveaux de responsabilité :
+L'application gère les accès via une structure stricte de rôles.
 
 ### 1. Niveau Plateforme (Super Admin)
-C'est l'administrateur technique ou commercial de la solution SaaS.
-*   **Responsabilités** : Créer les comptes "Entreprise", configurer les paramètres globaux (SEO, maintenance), surveiller les métriques globales.
-*   **Visibilité** : Voit toutes les entreprises mais n'intervient pas dans leur gestion opérationnelle.
+Administrateur global de la solution SaaS.
+*   **Périmètre** : Transverse (toutes les entreprises).
+*   **Capacités** : Création/Suspension des entreprises clientes, gestion des premiers administrateurs, configuration globale (SEO, messages).
+*   **Restrictions** : Ne voit pas le détail opérationnel (dépenses, chantiers) des clients.
 
-### 2. Niveau Entreprise (Admin)
-C'est le dirigeant ou le gestionnaire de l'entreprise cliente.
-*   **Responsabilités** : Créer les chantiers, créer les comptes utilisateurs de ses employés, affecter les ressources.
-*   **Visibilité** : Accès total aux données de son entreprise uniquement.
+### 2. Niveau Entreprise (Admin / Direction)
+Gestionnaires de l'entreprise cliente.
+*   **Admin** : Gère les utilisateurs, les chantiers et les paramètres de son entreprise.
+*   **Direction** : Rôle opérationnel disposant des droits de validation financière et de vue d'ensemble sur tous les chantiers.
+*   **Visibilité** : Totale sur les données de leur entreprise.
 
-### 3. Niveau Opérationnel (Utilisateurs)
-Ce sont les employés sur le terrain ou au bureau.
-*   **Direction** : Valide les dépenses, consulte les tableaux de bord financiers.
-*   **Chef de Chantier / Acheteur** : Saisit les données (Achats, Heures, Avances) pour les chantiers auxquels ils sont assignés.
+### 3. Niveau Opérationnel (Terrain)
+Utilisateurs assignés à des tâches spécifiques.
+*   **Chef de Chantier** : Saisie complète (Achats, Heures, Avances).
+*   **Responsable Achats** : Saisie restreinte (Achats uniquement). Ne peut pas demander d'avances ni saisir d'heures.
+*   **Visibilité** : Restreinte aux chantiers auxquels ils sont explicitement assignés.
 
-## Fonctionnalités Principales
+## Fonctionnalités Métier
 
 ### 1. Gestion des Chantiers
-Chaque chantier est une entité financière autonome.
-*   **Budget Prévisionnel** : Défini à la création, il sert de référence pour le calcul des écarts.
-*   **Localisation** : Coordonnées GPS pour situer le chantier (utile pour les livraisons/pointages).
-*   **Assignation** : Un chantier n'est visible que par les utilisateurs qui y sont explicitement assignés (sauf pour les Admins/Direction qui voient tout).
+Le chantier est l'unité analytique centrale.
+*   **Cycle de vie** : Création -> Assignation des équipes -> Activité (Saisies) -> Clôture.
+*   **Budget** : Un budget prévisionnel est défini à la création. Il sert de base au calcul du pourcentage d'avancement financier.
+*   **Assignation** : Mécanisme de sécurité permettant de limiter l'accès d'un utilisateur (ex: Chef de Chantier A) uniquement à ses chantiers.
 
-### 2. Le Flux de Dépenses (Workflow)
-Le cœur du système est le suivi des coûts en temps réel.
+### 2. Flux de Dépenses (Workflow)
 
-#### A. La Saisie (Terrain)
-Les utilisateurs (Chefs de chantier) saisissent les informations via leur mobile :
-*   **Achats** : Montant, Fournisseur, Photo du ticket/facture.
-*   **Main d'œuvre** : Nombre d'heures x Taux horaire (calcul automatique du coût).
-*   **Avances** : Demande d'argent liquide pour frais divers.
+#### A. Saisie Terrain
+Les utilisateurs soumettent les dépenses via des formulaires optimisés pour mobile.
+*   **Achats Matériaux** :
+    *   Champs : Montant, Date, Fournisseur, Catégorie.
+    *   **Règle Métier** : Si le montant dépasse **500 MAD**, l'ajout d'une photo justificative est techniquement obligatoire pour valider le formulaire.
+    *   Formats acceptés : JPG, PNG, GIF.
+*   **Main d'œuvre (Heures)** :
+    *   Calcul : Quantité (Heures) x Taux Unitaire = Coût Total.
+    *   Permet de suivre le coût de la main d'œuvre interne ou intérimaire.
+*   **Demandes d'Avance** :
+    *   Permet aux chefs de chantier de demander de la trésorerie.
+    *   *Restriction* : Indisponible pour le rôle "Responsable Achats".
 
-#### B. La Validation (Bureau)
-Rien n'est comptabilisé définitivement sans validation.
-*   Les saisies apparaissent en statut "En attente".
-*   Un utilisateur ayant les droits de validation (Direction/Admin) peut :
-    *   **Valider** : La dépense est intégrée au coût réel du chantier.
-    *   **Refuser** : Avec un motif explicatif.
+#### B. Validation (Bureau)
+Aucune saisie n'impacte le budget réel tant qu'elle n'est pas validée.
+*   **Interface de Validation** : Réservée au rôle "Direction".
+*   **Actions** :
+    *   **Valider** : La dépense passe au statut `valide`. Elle est comptabilisée dans le "Réalisé".
+    *   **Refuser** : La dépense passe au statut `refuse`. Un motif (commentaire) est obligatoire.
+*   **Alertes** : La validation d'une dépense déclenche le recalcul des indicateurs et peut générer des alertes (ex: Budget dépassé).
 
-### 3. Tableaux de Bord et KPI
-Les données validées alimentent les tableaux de bord en temps réel :
-*   **Consommation Budget** : (Total Dépenses Validées / Budget Prévisionnel) %.
-*   **Trésorerie** : Suivi des avances distribuées vs justificatifs remontés.
-*   **Répartition** : Vue par catégorie (Matériaux, Main d'œuvre, etc.).
+### 3. Reporting et KPI
+Les tableaux de bord agrègent les données validées en temps réel.
 
-### 4. Système d'Alertes
-Le système surveille activement les indicateurs critiques :
-*   **Alerte Budget** : Déclenchée si les dépenses approchent ou dépassent un pourcentage défini du budget (ex: 80% ou 100%).
-*   **Alerte Avance** : Déclenchée si un utilisateur a cumulé un montant d'avances non justifiées trop élevé.
+*   **Indicateurs Clés (KPI)** :
+    *   **Consommation Budget** : Ratio (Dépenses Validées / Budget Prévisionnel).
+    *   **Reste à dépenser** : Budget - Dépenses Validées.
+*   **Analyses** :
+    *   Derniers achats (liste chronologique).
+    *   Répartition par catégorie.
+*   **Export** : Génération de rapports PDF synthétiques par chantier pour archivage ou partage.
 
-## Cycle de Vie d'une Donnée
+### 4. Système d'Alertes Automatisé
+Le système surveille les seuils critiques à chaque validation.
+*   **Alerte Budget** : Se déclenche lorsque les dépenses validées atteignent un seuil critique du budget.
+*   **Alerte Anomalie** : Peut être configurée pour détecter des saisies incohérentes.
 
-1.  **Création** : L'utilisateur remplit le formulaire. Statut = `en_attente`.
-2.  **Notification** : (Optionnel) Les gestionnaires voient une notification de nouvelle saisie.
-3.  **Traitement** : Le gestionnaire examine la photo et le montant.
-4.  **Décision** :
-    *   Si OK -> Statut = `valide`. Le montant s'ajoute au "Réalisé".
-    *   Si KO -> Statut = `refuse`. La donnée est archivée mais ne compte pas dans le budget.
+## Cycle de Vie de la Donnée
+
+1.  **Saisie** : Statut `en_attente`. La donnée est visible mais ne compte pas dans les totaux financiers.
+2.  **Traitement** : Le gestionnaire analyse la conformité (prix, photo).
+3.  **Décision** :
+    *   `valide` : Intégration définitive dans les coûts.
+    *   `refuse` : Archivage avec motif.
