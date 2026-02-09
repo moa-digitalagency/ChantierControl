@@ -1,33 +1,33 @@
 {% extends 'base.html' %}
 
-{% block title %}Tableau de Bord Direction{% endblock %}
+{% block title %}{{ t('dashboard_title_direction') }}{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Tableau de Bord</h1>
-            <p class="text-gray-500">Vue d'ensemble des chantiers</p>
+            <h1 class="text-2xl font-bold text-gray-800">{{ t('dashboard_title') }}</h1>
+            <p class="text-gray-500">{{ t('dashboard_subtitle') }}</p>
         </div>
         <div class="flex gap-2">
             <div class="relative group">
                 <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                    <i class="fas fa-plus-circle"></i> Nouvelle Saisie
+                    <i class="fas fa-plus-circle"></i> {{ t('dashboard_new_entry') }}
                 </button>
                 <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 hidden group-hover:block z-50">
                     <a href="{{ url_for('saisies.nouvel_achat') }}" class="block px-4 py-2 text-gray-800 hover:bg-indigo-50">
-                        <i class="fas fa-shopping-cart mr-2 text-indigo-600"></i> Achat
+                        <i class="fas fa-shopping-cart mr-2 text-indigo-600"></i> {{ t('dashboard_entry_purchase') }}
                     </a>
                     <a href="{{ url_for('saisies.nouvelle_avance') }}" class="block px-4 py-2 text-gray-800 hover:bg-indigo-50">
-                        <i class="fas fa-money-bill-wave mr-2 text-indigo-600"></i> Avance
+                        <i class="fas fa-money-bill-wave mr-2 text-indigo-600"></i> {{ t('dashboard_entry_advance') }}
                     </a>
                     <a href="{{ url_for('saisies.nouvelle_heure') }}" class="block px-4 py-2 text-gray-800 hover:bg-indigo-50">
-                        <i class="fas fa-clock mr-2 text-indigo-600"></i> Heures
+                        <i class="fas fa-clock mr-2 text-indigo-600"></i> {{ t('dashboard_entry_hours') }}
                     </a>
                 </div>
             </div>
             <a href="{{ url_for('chantiers.nouveau') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                <i class="fas fa-plus"></i> Nouveau Chantier
+                <i class="fas fa-plus"></i> {{ t('dashboard_new_site') }}
             </a>
         </div>
     </div>
@@ -38,7 +38,7 @@
             <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
             <div>
                 <p class="font-medium text-yellow-800">{{ alerte_saisies.message }}</p>
-                <a href="{{ url_for('validation.liste') }}" class="text-yellow-600 hover:underline text-sm">Voir les saisies en attente</a>
+                <a href="{{ url_for('validation.liste') }}" class="text-yellow-600 hover:underline text-sm">{{ t('dashboard_pending_validations_link') }}</a>
             </div>
         </div>
     </div>
@@ -48,7 +48,7 @@
         <div class="bg-white rounded-xl shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm">Chantiers actifs</p>
+                    <p class="text-gray-500 text-sm">{{ t('dashboard_active_sites') }}</p>
                     <p class="text-3xl font-bold text-gray-800">{{ dashboard_data|length }}</p>
                 </div>
                 <div class="bg-blue-100 p-3 rounded-full">
@@ -60,20 +60,20 @@
         <div class="bg-white rounded-xl shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm">En attente validation</p>
+                    <p class="text-gray-500 text-sm">{{ t('dashboard_pending_validations') }}</p>
                     <p class="text-3xl font-bold text-orange-600">{{ saisies.total }}</p>
                 </div>
                 <div class="bg-orange-100 p-3 rounded-full">
                     <i class="fas fa-clock text-orange-600 text-xl"></i>
                 </div>
             </div>
-            <a href="{{ url_for('validation.liste') }}" class="text-orange-600 hover:underline text-sm mt-2 block">Voir tout</a>
+            <a href="{{ url_for('validation.liste') }}" class="text-orange-600 hover:underline text-sm mt-2 block">{{ t('dashboard_view_all') }}</a>
         </div>
         
         <div class="bg-white rounded-xl shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm">Budget Total</p>
+                    <p class="text-gray-500 text-sm">{{ t('dashboard_total_budget') }}</p>
                     <p class="text-2xl font-bold text-gray-800">
                         {% set total_budget = dashboard_data | map(attribute='kpi.budget') | sum %}
                         {{ format_currency(total_budget) }}
@@ -88,7 +88,7 @@
         <div class="bg-white rounded-xl shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm">Alertes actives</p>
+                    <p class="text-gray-500 text-sm">{{ t('dashboard_active_alerts') }}</p>
                     <p class="text-3xl font-bold text-red-600">
                         {% set total_alertes = dashboard_data | map(attribute='nb_alertes') | sum %}
                         {{ total_alertes }}
@@ -103,20 +103,20 @@
     
     <div class="bg-white rounded-xl shadow overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-800">Liste des Chantiers</h2>
+            <h2 class="text-lg font-semibold text-gray-800">{{ t('dashboard_site_list_title') }}</h2>
         </div>
         
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chantier</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Budget</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Consommé</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Taux</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Solde Avance</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alertes</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ t('table_header_site') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ t('table_header_budget') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ t('table_header_consumed') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ t('table_header_rate') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ t('table_header_advance_balance') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ t('table_header_alerts') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{{ t('table_header_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -124,7 +124,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="font-medium text-gray-900">{{ item.chantier.nom }}</div>
-                            <div class="text-sm text-gray-500">{{ item.chantier.adresse or 'Non renseignée' }}</div>
+                            <div class="text-sm text-gray-500">{{ item.chantier.adresse or t('table_no_address') }}</div>
                         </td>
                         <td class="px-6 py-4 text-sm">{{ format_currency(item.kpi.budget) }}</td>
                         <td class="px-6 py-4 text-sm">{{ format_currency(item.kpi.cout_total) }}</td>
@@ -142,17 +142,17 @@
                         <td class="px-6 py-4">
                             {% if item.alertes %}
                             <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
-                                {{ item.nb_alertes }} alerte(s)
+                                {{ item.nb_alertes }} {{ t('table_alert_count') }}
                             </span>
                             {% else %}
                             <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                                OK
+                                {{ t('table_alert_ok') }}
                             </span>
                             {% endif %}
                         </td>
                         <td class="px-6 py-4">
                             <a href="{{ url_for('chantiers.detail', id=item.chantier.id) }}" class="text-blue-600 hover:text-blue-800">
-                                <i class="fas fa-eye"></i> Détail
+                                <i class="fas fa-eye"></i> {{ t('table_action_detail') }}
                             </a>
                         </td>
                     </tr>
@@ -160,7 +160,7 @@
                     <tr>
                         <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                             <i class="fas fa-building text-4xl mb-2 block opacity-50"></i>
-                            Aucun chantier actif
+                            {{ t('table_no_active_sites') }}
                         </td>
                     </tr>
                     {% endfor %}
