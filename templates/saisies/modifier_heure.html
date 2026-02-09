@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifier Heures{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('validation.liste') }}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-1"></i> Retour aux validations
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Modifier Heures</h1>
+
+        <form method="POST" class="space-y-6">
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                <p class="text-sm text-gray-600">Chantier : <span class="font-semibold">{{ entry.chantier.nom }}</span></p>
+                <p class="text-sm text-gray-600">Saisi par : <span class="font-semibold">{{ entry.saisi_par.prenom }} {{ entry.saisi_par.nom }}</span></p>
+                <p class="text-sm text-gray-600">Date de saisie : {{ entry.created_at.strftime('%d/%m/%Y') }}</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Travail *</label>
+                    <input type="date" name="date_travail" required value="{{ entry.date_travail }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Type de Travail</label>
+                    <select name="type_travail" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="main_oeuvre" {% if entry.type_travail == 'main_oeuvre' %}selected{% endif %}>Main d'oeuvre</option>
+                        <option value="tache_specialisee" {% if entry.type_travail == 'tache_specialisee' %}selected{% endif %}>Tâche Spécialisée</option>
+                        <option value="heures_sup" {% if entry.type_travail == 'heures_sup' %}selected{% endif %}>Heures Supplémentaires</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantité (Heures) *</label>
+                    <input type="number" name="quantite" step="0.5" required value="{{ entry.quantite }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarif Unitaire (MAD/h) *</label>
+                    <input type="number" name="tarif_unitaire" step="0.01" required value="{{ entry.tarif_unitaire }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea name="description" rows="3"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">{{ entry.description }}</textarea>
+            </div>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                <label class="block text-sm font-medium text-yellow-800 mb-2">Motif de la modification (Obligatoire) *</label>
+                <textarea name="remarque_modification" required rows="2"
+                          class="w-full px-4 py-2 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 bg-white"
+                          placeholder="Pourquoi modifiez-vous cette saisie ?">{{ entry.remarque_modification or '' }}</textarea>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-save mr-2"></i> Enregistrer les modifications
+                </button>
+                <a href="{{ url_for('validation.liste') }}" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition duration-200 text-center">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

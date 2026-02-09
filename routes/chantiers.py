@@ -13,7 +13,7 @@ def liste():
     role = session.get('user_role')
     
     if role == 'direction':
-        chantiers = Chantier.query.all()
+        chantiers = Chantier.query.filter_by(entreprise_id=user.entreprise_id).all()
     else:
         assignments = ChantierAssignment.query.filter_by(
             user_id=user.id, actif=True
@@ -26,6 +26,8 @@ def liste():
 @chantiers_bp.route('/nouveau', methods=['GET', 'POST'])
 @direction_required
 def nouveau():
+    user = get_current_user()
+
     if request.method == 'POST':
         nom = request.form.get('nom')
         adresse = request.form.get('adresse')
@@ -38,7 +40,8 @@ def nouveau():
             adresse=adresse,
             latitude=float(latitude) if latitude else None,
             longitude=float(longitude) if longitude else None,
-            budget_previsionnel=float(budget) if budget else 0
+            budget_previsionnel=float(budget) if budget else 0,
+            entreprise_id=user.entreprise_id
         )
         
         db.session.add(chantier)
@@ -60,7 +63,11 @@ def detail(id):
         flash('Chantier non trouvé', 'danger')
         return redirect(url_for('chantiers.liste'))
     
-    if role != 'direction':
+    if role == 'direction':
+        if chantier.entreprise_id != user.entreprise_id:
+            flash('Accès non autorisé', 'danger')
+            return redirect(url_for('dashboard.index'))
+    else:
         assignment = ChantierAssignment.query.filter_by(
             user_id=user.id, chantier_id=id, actif=True
         ).first()
@@ -88,14 +95,26 @@ def detail(id):
 @chantiers_bp.route('/<int:id>/assigner', methods=['GET', 'POST'])
 @direction_required
 def assigner(id):
+    current_user = get_current_user()
     chantier = db.session.get(Chantier, id)
+
     if not chantier:
         flash('Chantier non trouvé', 'danger')
         return redirect(url_for('chantiers.liste'))
     
+    if chantier.entreprise_id != current_user.entreprise_id:
+        flash('Accès non autorisé', 'danger')
+        return redirect(url_for('chantiers.liste'))
+
     if request.method == 'POST':
         user_id = request.form.get('user_id')
         
+        # Verify target user is in same entreprise
+        target_user = db.session.get(User, user_id)
+        if not target_user or target_user.entreprise_id != current_user.entreprise_id:
+            flash('Utilisateur invalide', 'danger')
+            return redirect(url_for('chantiers.assigner', id=id))
+
         existing = ChantierAssignment.query.filter_by(
             user_id=user_id, chantier_id=id
         ).first()
@@ -113,7 +132,11 @@ def assigner(id):
         flash('Utilisateur assigné avec succès', 'success')
         return redirect(url_for('chantiers.detail', id=id))
     
-    users = User.query.filter(User.role != 'direction', User.actif == True).all()
+    users = User.query.filter(
+        User.entreprise_id == current_user.entreprise_id,
+        User.role != 'direction',
+        User.actif == True
+    ).all()
     
     current_assignments = ChantierAssignment.query.filter_by(
         chantier_id=id, actif=True

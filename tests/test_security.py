@@ -2,6 +2,7 @@ import unittest
 import os
 import sys
 import time
+import tempfile
 from flask import session
 
 # Add root to path
@@ -13,14 +14,15 @@ from security import hash_pin
 
 class TestSecurity(unittest.TestCase):
     def setUp(self):
+        self.db_fd, self.db_path = tempfile.mkstemp()
+        os.environ['DATABASE_URL'] = f'sqlite:///{self.db_path}'
         self.app = create_app()
         self.app.config['TESTING'] = True
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         self.app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for testing if it was enabled (it's not but good practice)
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
-        db.create_all()
+        # db.create_all() is called in create_app
 
         # Create Entreprise
         self.entreprise = Entreprise(
@@ -47,6 +49,8 @@ class TestSecurity(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
+        os.close(self.db_fd)
+        os.unlink(self.db_path)
 
         # Reset rate limiter storage if it exists (for isolation)
         from routes import auth

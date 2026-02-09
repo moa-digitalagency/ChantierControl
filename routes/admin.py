@@ -59,6 +59,7 @@ def nouvel_utilisateur():
         nom = request.form.get('nom', '').strip()
         prenom = request.form.get('prenom', '').strip()
         role = request.form.get('role')
+        role_label = request.form.get('role_label', '').strip()
         
         if not all([telephone, pin, nom, prenom, role]):
             flash('Tous les champs sont requis', 'danger')
@@ -86,6 +87,7 @@ def nouvel_utilisateur():
             nom=nom,
             prenom=prenom,
             role=role,
+            role_label=role_label,
             entreprise_id=entreprise.id,
             created_by_id=user.id
         )
@@ -128,6 +130,7 @@ def modifier_utilisateur(id):
         target_user.nom = request.form.get('nom', '').strip()
         target_user.prenom = request.form.get('prenom', '').strip()
         target_user.role = request.form.get('role')
+        target_user.role_label = request.form.get('role_label', '').strip()
         target_user.actif = 'actif' in request.form
         
         if target_user.role not in roles:
