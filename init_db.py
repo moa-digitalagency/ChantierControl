@@ -91,6 +91,18 @@ def init_database():
                 # Table might not exist yet if fresh install, which is fine
                 pass
 
+            # Check ouvriers table for CNI
+            try:
+                columns = [c['name'] for c in inspector.get_columns('ouvriers')]
+                if 'cni' not in columns:
+                    print("Migration: Ajout de cni et photo_cni à la table ouvriers")
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN cni VARCHAR(100)"))
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN photo_cni VARCHAR(500)"))
+                        conn.commit()
+            except Exception as e:
+                pass
+
         except Exception as e:
             print(f"Erreur lors de l'initialisation de la base: {e}")
             # Continue execution to allow super admin check

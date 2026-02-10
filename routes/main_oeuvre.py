@@ -3,6 +3,7 @@ from models import db, Ouvrier, Pointage, Chantier, User
 from security import login_required, get_current_user, direction_required
 from datetime import datetime, date
 from utils.export import export_to_excel
+from utils import save_photo
 import pandas as pd
 
 main_oeuvre_bp = Blueprint('main_oeuvre', __name__, url_prefix='/main_oeuvre')
@@ -57,6 +58,7 @@ def nouveau():
         telephone = request.form.get('telephone')
         poste = request.form.get('poste')
         chantier_id = request.form.get('chantier_id')
+        cni = request.form.get('cni')
 
         try:
             taux_horaire = float(request.form.get('taux_horaire', 0))
@@ -66,6 +68,14 @@ def nouveau():
         if not nom or not prenom:
             flash('Nom et Prénom sont obligatoires', 'danger')
             return render_template('main_oeuvre/nouveau.html', chantiers=chantiers)
+
+        # Handle Photo Upload
+        photo = request.files.get('photo_cni')
+        photo_filename = None
+        if photo and photo.filename:
+            photo_filename = save_photo(photo)
+            if not photo_filename:
+                flash('Format de fichier non autorisé. Utilisez JPG, PNG ou GIF', 'warning')
 
         # Validate chantier access
         if chantier_id:
@@ -85,7 +95,9 @@ def nouveau():
             prenom=prenom,
             telephone=telephone,
             poste=poste,
-            taux_horaire=taux_horaire
+            taux_horaire=taux_horaire,
+            cni=cni,
+            photo_cni=photo_filename
         )
         db.session.add(ouvrier)
         db.session.commit()
@@ -121,7 +133,17 @@ def modifier(id):
         ouvrier.prenom = request.form.get('prenom')
         ouvrier.telephone = request.form.get('telephone')
         ouvrier.poste = request.form.get('poste')
+        ouvrier.cni = request.form.get('cni')
         chantier_id = request.form.get('chantier_id')
+
+        # Handle Photo Upload
+        photo = request.files.get('photo_cni')
+        if photo and photo.filename:
+            photo_filename = save_photo(photo)
+            if photo_filename:
+                ouvrier.photo_cni = photo_filename
+            else:
+                flash('Format de fichier non autorisé', 'warning')
 
         if chantier_id:
              chantier_id = int(chantier_id)
