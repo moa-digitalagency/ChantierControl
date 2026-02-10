@@ -117,11 +117,17 @@
                             {{ "{:,.2f}".format(ouvrier.taux_horaire) }} MAD/h
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            {% if session.get('user_role') in ['admin', 'direction', 'super_admin', 'chef_chantier'] %}
-                            <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href="{{ url_for('main_oeuvre.details', id=ouvrier.id) }}" class="text-blue-600 hover:text-blue-900 bg-blue-50 p-1.5 rounded-md hover:bg-blue-100 transition-colors" title="Voir Fiche">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+
+                                {% if session.get('user_role') in ['admin', 'direction', 'super_admin', 'chef_chantier'] %}
                                 <a href="{{ url_for('main_oeuvre.modifier', id=ouvrier.id) }}" class="text-primary-600 hover:text-primary-900 bg-primary-50 p-1.5 rounded-md hover:bg-primary-100 transition-colors" title="Modifier">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
+                                {% endif %}
+
                                 {% if session.get('user_role') in ['admin', 'direction', 'super_admin'] %}
                                 <form action="{{ url_for('main_oeuvre.supprimer', id=ouvrier.id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ouvrier ?');" class="inline-block">
                                     <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded-md transition-colors" title="Supprimer">
@@ -130,7 +136,6 @@
                                 </form>
                                 {% endif %}
                             </div>
-                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

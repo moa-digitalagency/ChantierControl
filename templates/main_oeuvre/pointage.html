@@ -35,9 +35,9 @@
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold tracking-wide">
                             <th class="px-6 py-4">Ouvrier</th>
-                            <th class="px-6 py-4">Poste</th>
-                            <th class="px-6 py-4 text-right">Taux (MAD)</th>
-                            <th class="px-6 py-4 w-32 text-center">Heures</th>
+                            <th class="px-6 py-4">Horaires (Arrivée / Départ / Pause)</th>
+                            <th class="px-6 py-4 text-center">Heures Calc.</th>
+                            <th class="px-6 py-4 text-right">Taux</th>
                             <th class="px-6 py-4 text-right">Total (MAD)</th>
                         </tr>
                     </thead>
@@ -46,21 +46,48 @@
                         {% set pointage = existing_pointages.get(ouvrier.id) %}
                         {% set heures = pointage.heures if pointage else 0 %}
                         <tr class="hover:bg-gray-50 transition-colors group">
-                            <td class="px-6 py-4 font-medium text-gray-900">
+                            <td class="px-6 py-4 font-medium text-gray-900 w-1/4">
                                 {{ ouvrier.nom }} {{ ouvrier.prenom }}
+                                <div class="text-xs text-gray-500 font-normal">{{ ouvrier.poste or '-' }}</div>
                             </td>
-                            <td class="px-6 py-4 text-gray-500 text-sm">
-                                {{ ouvrier.poste or '-' }}
+                            <td class="px-6 py-4">
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+                                    <div>
+                                        <label class="text-[10px] text-gray-500 uppercase">Arrivée</label>
+                                        <input type="time" name="check_in_{{ ouvrier.id }}"
+                                               value="{{ pointage.check_in.strftime('%H:%M') if pointage and pointage.check_in else '' }}"
+                                               class="time-input block w-full text-sm rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 px-2 py-1"
+                                               data-id="{{ ouvrier.id }}" data-type="in">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] text-gray-500 uppercase">Départ</label>
+                                        <input type="time" name="check_out_{{ ouvrier.id }}"
+                                               value="{{ pointage.check_out.strftime('%H:%M') if pointage and pointage.check_out else '' }}"
+                                               class="time-input block w-full text-sm rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 px-2 py-1"
+                                               data-id="{{ ouvrier.id }}" data-type="out">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] text-gray-500 uppercase">Début Pause</label>
+                                        <input type="time" name="break_start_{{ ouvrier.id }}"
+                                               value="{{ pointage.break_start.strftime('%H:%M') if pointage and pointage.break_start else '' }}"
+                                               class="time-input block w-full text-sm rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 px-2 py-1"
+                                               data-id="{{ ouvrier.id }}" data-type="break_start">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] text-gray-500 uppercase">Fin Pause</label>
+                                        <input type="time" name="break_end_{{ ouvrier.id }}"
+                                               value="{{ pointage.break_end.strftime('%H:%M') if pointage and pointage.break_end else '' }}"
+                                               class="time-input block w-full text-sm rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 px-2 py-1"
+                                               data-id="{{ ouvrier.id }}" data-type="break_end">
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-center font-bold text-lg text-gray-700">
+                                <span id="hours_display_{{ ouvrier.id }}">{{ "%.2f"|format(heures) }}</span>
+                                <input type="hidden" id="hours_val_{{ ouvrier.id }}" value="{{ heures }}">
                             </td>
                             <td class="px-6 py-4 text-right font-mono text-gray-600">
                                 <span class="rate" data-id="{{ ouvrier.id }}">{{ ouvrier.taux_horaire }}</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <input type="number" step="0.5" min="0" max="24"
-                                       name="hours_{{ ouvrier.id }}"
-                                       value="{{ heures }}"
-                                       class="hours-input w-24 text-center rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors"
-                                       data-id="{{ ouvrier.id }}">
                             </td>
                             <td class="px-6 py-4 text-right font-bold text-gray-900">
                                 <span class="total-display" id="total_{{ ouvrier.id }}">0.00</span>
@@ -70,9 +97,9 @@
                     </tbody>
                     <tfoot class="bg-gray-50 border-t border-gray-200">
                         <tr>
-                            <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-700 uppercase text-xs tracking-wider">Total Journée</td>
+                            <td colspan="2" class="px-6 py-4 text-right font-bold text-gray-700 uppercase text-xs tracking-wider">Total Journée</td>
                             <td class="px-6 py-4 text-center font-bold text-gray-900" id="grand-total-hours">0</td>
-                            <td class="px-6 py-4 text-right font-bold text-primary-600 text-lg" id="grand-total-money">0.00 MAD</td>
+                            <td colspan="2" class="px-6 py-4 text-right font-bold text-primary-600 text-lg" id="grand-total-money">0.00 MAD</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -103,31 +130,70 @@
 
 {% block scripts %}
 <script>
+    function calculateHours(id) {
+        const inTime = document.querySelector(`input[name="check_in_${id}"]`).value;
+        const outTime = document.querySelector(`input[name="check_out_${id}"]`).value;
+        const breakStart = document.querySelector(`input[name="break_start_${id}"]`).value;
+        const breakEnd = document.querySelector(`input[name="break_end_${id}"]`).value;
+
+        if (!inTime || !outTime) return 0;
+
+        let start = new Date("2000-01-01T" + inTime);
+        let end = new Date("2000-01-01T" + outTime);
+
+        if (end < start) {
+            end.setDate(end.getDate() + 1); // Overnight
+        }
+
+        let diff = (end - start) / 1000 / 60 / 60; // Hours
+
+        if (breakStart && breakEnd) {
+            let bStart = new Date("2000-01-01T" + breakStart);
+            let bEnd = new Date("2000-01-01T" + breakEnd);
+            if (bEnd < bStart) bEnd.setDate(bEnd.getDate() + 1);
+
+            let bDiff = (bEnd - bStart) / 1000 / 60 / 60;
+            diff -= bDiff;
+        }
+
+        return Math.max(0, diff);
+    }
+
     function updateTotals() {
         let totalHours = 0;
         let totalMoney = 0;
 
-        document.querySelectorAll('.hours-input').forEach(input => {
-            const id = input.dataset.id;
-            const hours = parseFloat(input.value) || 0;
-            const rate = parseFloat(document.querySelector(`.rate[data-id="${id}"]`).innerText) || 0;
+        // Get all unique IDs
+        const ids = new Set();
+        document.querySelectorAll('.time-input').forEach(input => ids.add(input.dataset.id));
 
+        ids.forEach(id => {
+            const hours = calculateHours(id);
+            document.getElementById(`hours_display_${id}`).innerText = hours.toFixed(2);
+            document.getElementById(`hours_val_${id}`).value = hours;
+
+            const rate = parseFloat(document.querySelector(`.rate[data-id="${id}"]`).innerText) || 0;
             const total = hours * rate;
+
             document.getElementById(`total_${id}`).innerText = total.toFixed(2);
 
             totalHours += hours;
             totalMoney += total;
         });
 
-        document.getElementById('grand-total-hours').innerText = totalHours.toFixed(1);
+        document.getElementById('grand-total-hours').innerText = totalHours.toFixed(2);
         document.getElementById('grand-total-money').innerText = totalMoney.toFixed(2) + ' MAD';
     }
 
-    document.querySelectorAll('.hours-input').forEach(input => {
+    document.querySelectorAll('.time-input').forEach(input => {
         input.addEventListener('input', updateTotals);
     });
 
-    // Initial calculation
+    // Initial calculation is tricky because we might have loaded data but no 'input' event fired.
+    // However, the Python template renders values.
+    // We should run updateTotals once on load.
+    // BUT: The values rendered by Python might be from previous save.
+    // If we re-calculate on load based on time inputs, we ensure consistency.
     updateTotals();
 </script>
 {% endblock %}

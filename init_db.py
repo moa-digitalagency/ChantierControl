@@ -112,6 +112,20 @@ def init_database():
             except Exception as e:
                 pass
 
+            # Check pointages table for time tracking
+            try:
+                columns = [c['name'] for c in inspector.get_columns('pointages')]
+                if 'check_in' not in columns:
+                    print("Migration: Ajout de check_in, check_out, break_start, break_end à la table pointages")
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE pointages ADD COLUMN check_in TIME"))
+                        conn.execute(text("ALTER TABLE pointages ADD COLUMN check_out TIME"))
+                        conn.execute(text("ALTER TABLE pointages ADD COLUMN break_start TIME"))
+                        conn.execute(text("ALTER TABLE pointages ADD COLUMN break_end TIME"))
+                        conn.commit()
+            except Exception as e:
+                print(f"Migration error for pointages: {e}")
+
         except Exception as e:
             print(f"Erreur lors de l'initialisation de la base: {e}")
             # Continue execution to allow super admin check
