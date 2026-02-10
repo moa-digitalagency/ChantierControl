@@ -509,47 +509,68 @@ def export_fiche(id):
     user = get_current_user()
     ouvrier = Ouvrier.query.filter_by(id=id, entreprise_id=user.entreprise_id).first_or_404()
 
-    # Filter pointages history
-    filter_type = request.args.get('filter', 'month')
-    custom_start = request.args.get('start')
-    custom_end = request.args.get('end')
+    export_type = request.args.get('type', 'identity')
 
-    start_date, end_date = get_date_range(filter_type, custom_start, custom_end)
+    # Common Identity Section
+    identity_data = [
+        ['Nom', ouvrier.nom],
+        ['Prénom', ouvrier.prenom],
+        ['Poste', ouvrier.poste or '-'],
+        ['Téléphone', ouvrier.telephone or '-'],
+        ['Taux Horaire', f"{ouvrier.taux_horaire} MAD"],
+        ['Nationalité', ouvrier.nationalite or '-'],
+        ['Adresse', ouvrier.adresse or '-'],
+        ['Ville', ouvrier.ville or '-'],
+        ['CNI', ouvrier.cni or '-'],
+        ['Chantier Actuel', ouvrier.chantier.nom if ouvrier.chantier else 'Non assigné']
+    ]
 
-    pointages = ouvrier.pointages.filter(Pointage.date_pointage >= start_date, Pointage.date_pointage < end_date).order_by(Pointage.date_pointage.asc()).all()
+    sections = [
+        {
+            'title': 'Informations Personnelles',
+            'type': 'kv_list',
+            'data': identity_data
+        }
+    ]
 
-    total_heures = sum(p.heures for p in pointages)
-    total_montant = sum(p.montant for p in pointages)
+    filename_prefix = "Fiche_Identite"
 
-    data = []
-    # Identity Info Header
-    data.append({'Date': 'INFORMATIONS', 'Arrivée': '', 'Départ': '', 'Heures': '', 'Montant': ''})
-    data.append({'Date': 'Nom Complet', 'Arrivée': f"{ouvrier.nom} {ouvrier.prenom}", 'Départ': '', 'Heures': '', 'Montant': ''})
-    data.append({'Date': 'Poste', 'Arrivée': f"{ouvrier.poste or ''}", 'Départ': '', 'Heures': '', 'Montant': ''})
-    data.append({'Date': 'Taux Horaire', 'Arrivée': f"{ouvrier.taux_horaire} MAD", 'Départ': '', 'Heures': '', 'Montant': ''})
-    data.append({'Date': '', 'Arrivée': '', 'Départ': '', 'Heures': '', 'Montant': ''}) # Spacer
+    if export_type == 'complete':
+        filename_prefix = "Dossier_Complet"
+        # Filter pointages history
+        filter_type = request.args.get('filter', 'month')
+        custom_start = request.args.get('start')
+        custom_end = request.args.get('end')
 
-    # Table Header logic handled by export function (keys of first dict), so we need consistent keys
-    # But keys must be same.
+        start_date, end_date = get_date_range(filter_type, custom_start, custom_end)
 
-    for p in pointages:
-        data.append({
-            'Date': str(p.date_pointage),
-            'Arrivée': p.check_in.strftime('%H:%M') if p.check_in else '',
-            'Départ': p.check_out.strftime('%H:%M') if p.check_out else '',
-            'Heures': f"{p.heures:.2f}",
-            'Montant': f"{p.montant:.2f}"
+        pointages = ouvrier.pointages.filter(Pointage.date_pointage >= start_date, Pointage.date_pointage < end_date).order_by(Pointage.date_pointage.asc()).all()
+
+        total_heures = sum(p.heures for p in pointages)
+        total_montant = sum(p.montant for p in pointages)
+
+        # Pointage Table
+        pointage_rows = []
+        for p in pointages:
+            pointage_rows.append([
+                str(p.date_pointage),
+                p.check_in.strftime('%H:%M') if p.check_in else '-',
+                p.check_out.strftime('%H:%M') if p.check_out else '-',
+                f"{p.heures:.2f} h",
+                f"{p.montant:.2f} MAD"
+            ])
+
+        # Add Summary
+        pointage_rows.append(['TOTAL', '', '', f"{total_heures:.2f} h", f"{total_montant:.2f} MAD"])
+
+        sections.append({
+            'title': f'Historique & Salaires (Période: {start_date} - {end_date})',
+            'type': 'table',
+            'headers': ['Date', 'Arrivée', 'Départ', 'Heures', 'Montant'],
+            'data': pointage_rows
         })
 
-    # Add Total Row
-    data.append({
-        'Date': 'TOTAL',
-        'Arrivée': '',
-        'Départ': '',
-        'Heures': f"{total_heures:.2f}",
-        'Montant': f"{total_montant:.2f}"
-    })
+    from utils.export import export_complex_pdf
+    filename = f"{filename_prefix}_{ouvrier.nom}_{ouvrier.prenom}_{date.today()}.pdf"
 
-    from utils.export import export_to_pdf
-    filename = f"Fiche_{ouvrier.nom}_{ouvrier.prenom}_{date.today()}.pdf"
-    return export_to_pdf(data, filename)
+    return export_complex_pdf(sections, filename, title=f"Dossier: {ouvrier.nom} {ouvrier.prenom}")
