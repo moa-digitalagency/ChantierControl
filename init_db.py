@@ -55,6 +55,15 @@ def init_database():
                     conn.execute(text("ALTER TABLE users ADD COLUMN role_label VARCHAR(100)"))
                     conn.commit()
 
+            # Check entreprises table
+            columns = [c['name'] for c in inspector.get_columns('entreprises')]
+            if 'timezone' not in columns:
+                print("Migration: Ajout de timezone et country à la table entreprises")
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE entreprises ADD COLUMN timezone VARCHAR(50) DEFAULT 'UTC'"))
+                    conn.execute(text("ALTER TABLE entreprises ADD COLUMN country VARCHAR(50) DEFAULT 'MA'"))
+                    conn.commit()
+
             # Check achats table
             columns = [c['name'] for c in inspector.get_columns('achats')]
             if 'remarque_modification' not in columns:

@@ -4,98 +4,166 @@
 {% block page_subtitle %}Nouveau membre de l'équipe{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-    <form method="POST" action="{{ url_for('main_oeuvre.nouveau') }}" enctype="multipart/form-data" class="space-y-6">
-        <!-- Photo de profil -->
-        <div class="flex justify-center mb-6">
-            <div class="space-y-2 text-center">
-                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 mx-auto overflow-hidden relative group cursor-pointer">
-                    <i class="fas fa-camera text-gray-400 text-2xl group-hover:text-primary-500"></i>
-                    <input type="file" name="photo_profil" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" title="Modifier la photo de profil">
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+                <i class="fas fa-user-plus text-lg"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-gray-900">Formulaire de création</h2>
+                <p class="text-xs text-gray-500">Remplissez les informations ci-dessous</p>
+            </div>
+        </div>
+
+        <div class="p-6 md:p-8">
+            <form method="POST" action="{{ url_for('main_oeuvre.nouveau') }}" enctype="multipart/form-data" class="space-y-8">
+
+                <!-- Photo Upload Section -->
+                <div class="flex flex-col items-center justify-center mb-6">
+                    <div class="relative group cursor-pointer">
+                        <div class="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden transition-all group-hover:border-primary-500 group-hover:bg-white shadow-inner">
+                            <div class="text-center space-y-1 group-hover:scale-105 transition-transform">
+                                <i class="fas fa-camera text-gray-400 text-3xl group-hover:text-primary-500 transition-colors"></i>
+                                <p class="text-xs text-gray-400 group-hover:text-primary-600 font-medium">Photo</p>
+                            </div>
+                            <img id="preview-image" src="#" alt="Aperçu" class="absolute inset-0 w-full h-full object-cover hidden">
+                        </div>
+                        <div class="absolute bottom-0 right-0 bg-primary-600 text-white rounded-full p-2 shadow-lg transform translate-x-1 translate-y-1 group-hover:scale-110 transition-transform">
+                            <i class="fas fa-plus text-xs"></i>
+                        </div>
+                        <input type="file" name="photo_profil" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" onchange="previewImage(this)">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Cliquez pour ajouter une photo de profil</p>
                 </div>
-                <span class="text-xs text-gray-500">Photo de profil</span>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label for="nom" class="block text-sm font-medium text-gray-700 mb-2">Nom <span class="text-red-500">*</span></label>
-                <input type="text" name="nom" id="nom" required class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-            </div>
-            <div>
-                <label for="prenom" class="block text-sm font-medium text-gray-700 mb-2">Prénom <span class="text-red-500">*</span></label>
-                <input type="text" name="prenom" id="prenom" required class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-            </div>
-        </div>
+                <!-- Personal Info -->
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Informations Personnelles</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">Nom <span class="text-red-500">*</span></label>
+                            <input type="text" name="nom" id="nom" required class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-gray-50 focus:bg-white transition-colors h-11">
+                        </div>
+                        <div>
+                            <label for="prenom" class="block text-sm font-medium text-gray-700 mb-1">Prénom <span class="text-red-500">*</span></label>
+                            <input type="text" name="prenom" id="prenom" required class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-gray-50 focus:bg-white transition-colors h-11">
+                        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="md:col-span-2">
-                <label for="adresse" class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
-                <input type="text" name="adresse" id="adresse" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-            </div>
-            <div>
-                <label for="ville" class="block text-sm font-medium text-gray-700 mb-2">Ville</label>
-                <input type="text" name="ville" id="ville" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-            </div>
-        </div>
+                        <div class="md:col-span-2">
+                             <label for="adresse" class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+                             <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <input type="text" name="adresse" id="adresse" class="block w-full pl-10 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11">
+                             </div>
+                        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label for="nationalite" class="block text-sm font-medium text-gray-700 mb-2">Nationalité</label>
-                <input type="text" name="nationalite" id="nationalite" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-            </div>
-            <div>
-                <label for="chantier_id" class="block text-sm font-medium text-gray-700 mb-2">Chantier d'affectation</label>
-                <select name="chantier_id" id="chantier_id" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-                    <option value="">-- Aucun (Non assigné) --</option>
-                    {% for c in chantiers %}
-                    <option value="{{ c.id }}">{{ c.nom }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
+                        <div>
+                            <label for="ville" class="block text-sm font-medium text-gray-700 mb-1">Ville</label>
+                            <input type="text" name="ville" id="ville" class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11">
+                        </div>
+                        <div>
+                            <label for="nationalite" class="block text-sm font-medium text-gray-700 mb-1">Nationalité</label>
+                            <input type="text" name="nationalite" id="nationalite" class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11">
+                        </div>
 
-        <div>
-            <label for="poste" class="block text-sm font-medium text-gray-700 mb-2">Poste / Fonction</label>
-            <input type="text" name="poste" id="poste" placeholder="Ex: Maçon, Chef d'équipe..." class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-        </div>
+                        <div>
+                            <label for="telephone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <input type="tel" name="telephone" id="telephone" class="block w-full pl-10 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11">
+                            </div>
+                        </div>
 
-        <div>
-            <label for="telephone" class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-            <input type="tel" name="telephone" id="telephone" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-        </div>
-
-        <div>
-            <label for="cni" class="block text-sm font-medium text-gray-700 mb-2">N° CNI / Passeport / Séjour</label>
-            <input type="text" name="cni" id="cni" placeholder="Ex: AB123456" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Photo Pièce d'Identité</label>
-            <input type="file" name="photo_cni" accept="image/*" class="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-primary-50 file:text-primary-700
-                hover:file:bg-primary-100
-            ">
-        </div>
-
-        <div>
-            <label for="taux_horaire" class="block text-sm font-medium text-gray-700 mb-2">Taux Horaire (MAD)</label>
-            <div class="relative">
-                <input type="number" step="0.01" name="taux_horaire" id="taux_horaire" placeholder="0.00" class="w-full pl-4 pr-12 rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                    MAD
+                        <div>
+                            <label for="cni" class="block text-sm font-medium text-gray-700 mb-1">N° CNI / Passeport</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fas fa-id-card"></i>
+                                </div>
+                                <input type="text" name="cni" id="cni" placeholder="Ex: AB123456" class="block w-full pl-10 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm uppercase h-11">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <p class="text-xs text-gray-500 mt-1">Sera utilisé par défaut pour les pointages</p>
-        </div>
 
-        <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 mt-8">
-            <a href="{{ url_for('main_oeuvre.index') }}" class="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors font-medium">Annuler</a>
-            <button type="submit" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm transition-colors font-medium">Enregistrer</button>
+                <!-- Professional Info -->
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Informations Professionnelles</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="poste" class="block text-sm font-medium text-gray-700 mb-1">Poste / Fonction</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                <input type="text" name="poste" id="poste" placeholder="Ex: Maçon" class="block w-full pl-10 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="taux_horaire" class="block text-sm font-medium text-gray-700 mb-1">Taux Horaire</label>
+                            <div class="relative">
+                                <input type="number" step="0.01" name="taux_horaire" id="taux_horaire" placeholder="0.00" class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm pr-12 font-mono font-bold text-right h-11">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500 font-medium bg-gray-50 rounded-r-xl border-l border-gray-300 px-3 h-11">
+                                    MAD
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                             <label for="chantier_id" class="block text-sm font-medium text-gray-700 mb-1">Chantier d'affectation</label>
+                             <div class="relative">
+                                <select name="chantier_id" id="chantier_id" class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white h-11 text-gray-700">
+                                    <option value="">-- Aucun (Non assigné) --</option>
+                                    {% for c in chantiers %}
+                                    <option value="{{ c.id }}">{{ c.nom }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents -->
+                <div>
+                     <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Documents</h3>
+                     <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:bg-gray-50 transition-colors text-center cursor-pointer relative">
+                         <input type="file" name="photo_cni" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                         <i class="fas fa-file-image text-gray-400 text-3xl mb-2"></i>
+                         <p class="text-sm font-medium text-gray-900">Photo Pièce d'Identité</p>
+                         <p class="text-xs text-gray-500 mt-1">Glissez le fichier ou cliquez pour parcourir</p>
+                     </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
+                    <a href="{{ url_for('main_oeuvre.index') }}" class="px-6 py-2.5 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl transition-all font-medium shadow-sm h-11 flex items-center">Annuler</a>
+                    <button type="submit" class="px-6 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 transition-all font-medium flex items-center gap-2 h-11">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
+
+<script>
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById('preview-image');
+            img.src = e.target.result;
+            img.classList.remove('hidden');
+            // Hide icon content
+            input.parentElement.querySelector('div').classList.add('opacity-0');
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 {% endblock %}

@@ -1,120 +1,254 @@
 {% extends "base.html" %}
 
-{% block title %}Fiche Ouvrier - {{ ouvrier.nom }} {{ ouvrier.prenom }}{% endblock %}
+{% block page_title %}Détails Ouvrier{% endblock %}
+{% block page_subtitle %}Fiche individuelle et historique{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ ouvrier.nom }} {{ ouvrier.prenom }}</h1>
-            <p class="text-gray-500 text-sm mt-1">{{ ouvrier.poste or 'Poste non défini' }} • {{ ouvrier.chantier.nom if ouvrier.chantier else 'Non assigné' }}</p>
-        </div>
-        <div class="flex gap-2">
-            <a href="{{ url_for('main_oeuvre.modifier', id=ouvrier.id) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
-                <i class="fas fa-edit"></i> Modifier
-            </a>
-            <a href="{{ url_for('main_oeuvre.export_fiche', id=ouvrier.id, filter=filter_type, start=custom_start, end=custom_end) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors">
-                <i class="fas fa-file-pdf"></i> Exporter PDF
-            </a>
-        </div>
-    </div>
-
-    <!-- Stats & Filters -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Identity Card -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-start gap-4">
-            <div class="flex-shrink-0">
+    <!-- Header Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="flex items-center gap-4">
+            <div class="relative">
                 {% if ouvrier.photo_profil %}
-                <img class="h-20 w-20 rounded-full object-cover border-2 border-gray-100" src="{{ url_for('static', filename='uploads/' + ouvrier.photo_profil) }}" alt="">
+                <img class="h-20 w-20 rounded-full object-cover border-2 border-white shadow-md" src="{{ url_for('static', filename='uploads/' + ouvrier.photo_profil) }}" alt="{{ ouvrier.nom }}">
                 {% else %}
-                <div class="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-2xl">
+                <div class="h-20 w-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-400 text-3xl shadow-inner border border-gray-100">
                     <i class="fas fa-user"></i>
                 </div>
                 {% endif %}
+                <span class="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full" title="Actif"></span>
             </div>
             <div>
-                <h3 class="font-bold text-gray-900">Information</h3>
-                <p class="text-sm text-gray-500 mt-1"><i class="fas fa-phone mr-2 w-4"></i> {{ ouvrier.telephone or '-' }}</p>
-                <p class="text-sm text-gray-500 mt-1"><i class="fas fa-id-card mr-2 w-4"></i> {{ ouvrier.cni or '-' }}</p>
-                <p class="text-sm text-gray-500 mt-1"><i class="fas fa-money-bill mr-2 w-4"></i> {{ ouvrier.taux_horaire }} MAD/h</p>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">{{ ouvrier.nom }} {{ ouvrier.prenom }}</h1>
+                <div class="flex flex-wrap gap-2 mt-1">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                        {{ ouvrier.poste or 'Poste non défini' }}
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-600 border border-gray-100">
+                        <i class="fas fa-hard-hat mr-1 text-xs"></i> {{ ouvrier.chantier.nom if ouvrier.chantier else 'Non assigné' }}
+                    </span>
+                </div>
             </div>
         </div>
 
-        <!-- Filter & Stats -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-             <form method="GET" action="{{ url_for('main_oeuvre.details', id=ouvrier.id) }}" class="flex flex-wrap gap-2 items-center mb-4">
-                <span class="text-sm font-medium text-gray-700">Période :</span>
-                <select name="filter" onchange="this.form.submit()" class="text-sm border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 py-1 pl-2 pr-8">
-                    <option value="day" {% if filter_type == 'day' %}selected{% endif %}>Aujourd'hui</option>
-                    <option value="week" {% if filter_type == 'week' %}selected{% endif %}>Semaine</option>
-                    <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois</option>
-                    <option value="year" {% if filter_type == 'year' %}selected{% endif %}>Année</option>
-                    <option value="custom" {% if filter_type == 'custom' %}selected{% endif %}>Personnalisé</option>
-                </select>
-                {% if filter_type == 'custom' %}
-                <input type="date" name="start" value="{{ custom_start }}" class="text-sm border-gray-300 rounded-md py-1 px-2">
-                <input type="date" name="end" value="{{ custom_end }}" class="text-sm border-gray-300 rounded-md py-1 px-2">
-                <button type="submit" class="px-2 py-1 bg-gray-800 text-white rounded text-xs">OK</button>
-                {% endif %}
-            </form>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <p class="text-xs font-semibold text-blue-600 uppercase">Heures Travaillées</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ "{:,.2f}".format(total_heures) }} h</p>
-                </div>
-                <div class="bg-green-50 p-4 rounded-lg">
-                    <p class="text-xs font-semibold text-green-600 uppercase">Salaire Estimé</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ "{:,.2f}".format(total_montant) }} MAD</p>
+        <div class="flex flex-wrap gap-3 w-full md:w-auto">
+             <div class="dropdown relative group">
+                <button class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                    <i class="fas fa-download"></i> Exporter
+                    <i class="fas fa-chevron-down text-xs opacity-70"></i>
+                </button>
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden hidden group-hover:block z-20">
+                    <a href="{{ url_for('main_oeuvre.export_fiche', id=ouvrier.id, type='identity') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors border-b border-gray-50">
+                        <i class="fas fa-id-card mr-2 text-gray-400"></i> Fiche Identité
+                    </a>
+                    <a href="{{ url_for('main_oeuvre.export_fiche', id=ouvrier.id, type='complete', filter=filter_type, start=custom_start, end=custom_end) }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors">
+                        <i class="fas fa-folder-open mr-2 text-gray-400"></i> Dossier Complet
+                    </a>
                 </div>
             </div>
+
+            <a href="{{ url_for('main_oeuvre.modifier', id=ouvrier.id) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:text-primary-600 transition-all shadow-sm">
+                <i class="fas fa-edit"></i> Modifier
+            </a>
         </div>
     </div>
 
-    <!-- History Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h3 class="font-bold text-gray-900">Historique des Pointages</h3>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Identity Section -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    Informations
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                        <div class="mt-0.5 text-gray-400"><i class="fas fa-phone"></i></div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Téléphone</p>
+                            <p class="text-sm font-medium text-gray-900">{{ ouvrier.telephone or '-' }}</p>
+                        </div>
+                    </div>
+                     <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                        <div class="mt-0.5 text-gray-400"><i class="fas fa-id-card"></i></div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">CNI / Passeport</p>
+                            <p class="text-sm font-medium text-gray-900">{{ ouvrier.cni or '-' }}</p>
+                        </div>
+                    </div>
+                     <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                        <div class="mt-0.5 text-gray-400"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Adresse</p>
+                            <p class="text-sm font-medium text-gray-900">{{ ouvrier.adresse or '-' }}</p>
+                            <p class="text-xs text-gray-500">{{ ouvrier.ville or '' }}</p>
+                        </div>
+                    </div>
+                     <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
+                        <div class="mt-0.5 text-gray-400"><i class="fas fa-money-bill-wave"></i></div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Taux Horaire</p>
+                            <p class="text-sm font-bold text-green-600">{{ "{:,.2f}".format(ouvrier.taux_horaire) }} MAD<span class="text-gray-400 font-normal text-xs">/h</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <!-- CNI Preview if exists -->
+            {% if ouvrier.photo_cni %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                 <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                        <i class="fas fa-id-badge"></i>
+                    </div>
+                    Document Identité
+                </h3>
+                <div class="rounded-lg overflow-hidden border border-gray-200">
+                    <img src="{{ url_for('static', filename='uploads/' + ouvrier.photo_cni) }}" alt="CNI" class="w-full h-auto hover:opacity-90 transition-opacity cursor-pointer" onclick="window.open(this.src)">
+                </div>
+            </div>
+            {% endif %}
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold tracking-wider">
-                    <tr>
-                        <th class="px-6 py-3 text-left">Date</th>
-                        <th class="px-6 py-3 text-left">Chantier</th>
-                        <th class="px-6 py-3 text-center">Arrivée</th>
-                        <th class="px-6 py-3 text-center">Départ</th>
-                        <th class="px-6 py-3 text-center">Pause</th>
-                        <th class="px-6 py-3 text-right">Heures</th>
-                        <th class="px-6 py-3 text-right">Montant</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200 text-sm">
-                    {% for p in pointages %}
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 font-medium text-gray-900">{{ p.date_pointage.strftime('%d/%m/%Y') }}</td>
-                        <td class="px-6 py-4 text-gray-500">{{ p.chantier.nom }}</td>
-                        <td class="px-6 py-4 text-center font-mono text-gray-600">{{ p.check_in.strftime('%H:%M') if p.check_in else '-' }}</td>
-                        <td class="px-6 py-4 text-center font-mono text-gray-600">{{ p.check_out.strftime('%H:%M') if p.check_out else '-' }}</td>
-                        <td class="px-6 py-4 text-center text-gray-500 text-xs">
-                            {% if p.break_start and p.break_end %}
-                            {{ p.break_start.strftime('%H:%M') }} - {{ p.break_end.strftime('%H:%M') }}
+
+        <!-- History & Stats Section -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Filter Bar -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <form method="GET" action="{{ url_for('main_oeuvre.details', id=ouvrier.id) }}" class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="flex items-center gap-2 w-full md:w-auto">
+                        <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">Période</span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <select name="filter" id="filterSelect" onchange="toggleCustomDates(this.value); if(this.value!='custom') this.form.submit()" class="block w-full md:w-40 rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                            <option value="day" {% if filter_type == 'day' %}selected{% endif %}>Aujourd'hui</option>
+                            <option value="week" {% if filter_type == 'week' %}selected{% endif %}>Semaine (Lun-Dim)</option>
+                            <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois (1-31)</option>
+                            <option value="year" {% if filter_type == 'year' %}selected{% endif %}>Année en cours</option>
+                            <option value="custom" {% if filter_type == 'custom' %}selected{% endif %}>Personnalisé</option>
+                        </select>
+
+                        <div id="customDates" class="{% if filter_type != 'custom' %}hidden{% endif %} flex items-center gap-2">
+                            <input type="date" name="start" value="{{ custom_start }}" class="block w-32 rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                            <span class="text-gray-400">-</span>
+                            <input type="date" name="end" value="{{ custom_end }}" class="block w-32 rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm">
+                            <button type="submit" class="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg shadow-blue-500/20">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-blue-100 text-sm font-medium uppercase tracking-wide">Heures Travaillées</p>
+                        <i class="fas fa-clock text-blue-200 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold">{{ "{:,.2f}".format(total_heures) }} <span class="text-lg font-normal text-blue-100">h</span></p>
+                </div>
+                 <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-5 text-white shadow-lg shadow-green-500/20">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-green-100 text-sm font-medium uppercase tracking-wide">Salaire Estimé</p>
+                        <i class="fas fa-coins text-green-200 text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold">{{ "{:,.2f}".format(total_montant) }} <span class="text-lg font-normal text-green-100">MAD</span></p>
+                </div>
+            </div>
+
+            <!-- Detailed Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h3 class="font-bold text-gray-900">Historique des Pointages</h3>
+                    <span class="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded-md">{{ pointages|length }} entrées</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chantier</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Horaires</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Pause</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Heures</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for p in pointages %}
+                            <tr class="hover:bg-gray-50 transition-colors group">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ p.date_pointage.strftime('%d/%m/%Y') }}
+                                    <div class="text-xs text-gray-400 font-normal">{{ p.date_pointage.strftime('%A') }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        {{ p.chantier.nom }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <span class="text-green-600 font-mono bg-green-50 px-1.5 py-0.5 rounded">{{ p.check_in.strftime('%H:%M') if p.check_in else '--:--' }}</span>
+                                        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
+                                        <span class="text-red-600 font-mono bg-red-50 px-1.5 py-0.5 rounded">{{ p.check_out.strftime('%H:%M') if p.check_out else '--:--' }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500">
+                                    {% if p.break_start and p.break_end %}
+                                    <span class="text-xs bg-gray-100 px-2 py-1 rounded-full">{{ p.break_start.strftime('%H:%M') }} - {{ p.break_end.strftime('%H:%M') }}</span>
+                                    {% else %}
+                                    <span class="text-gray-300">-</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
+                                    {{ "{:,.2f}".format(p.heures) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-green-600">
+                                    {{ "{:,.2f}".format(p.montant) }}
+                                </td>
+                            </tr>
                             {% else %}
-                            -
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 text-right font-bold text-gray-900">{{ "{:,.2f}".format(p.heures) }}</td>
-                        <td class="px-6 py-4 text-right text-green-600 font-medium">{{ "{:,.2f}".format(p.montant) }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">Aucun pointage trouvé pour cette période.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            <tr>
+                                <td colspan="6" class="px-6 py-10 text-center text-gray-500 bg-gray-50/30 border-dashed border-2 border-gray-100 m-4 rounded-lg">
+                                    <div class="flex flex-col items-center">
+                                        <i class="fas fa-calendar-times text-4xl text-gray-300 mb-2"></i>
+                                        <p>Aucun pointage trouvé pour cette période.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if pointages %}
+                        <tfoot class="bg-gray-50 font-semibold text-gray-900">
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-right">TOTAL</td>
+                                <td class="px-6 py-4 text-right">{{ "{:,.2f}".format(total_heures) }} h</td>
+                                <td class="px-6 py-4 text-right text-green-600">{{ "{:,.2f}".format(total_montant) }} MAD</td>
+                            </tr>
+                        </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+function toggleCustomDates(value) {
+    const customDates = document.getElementById('customDates');
+    if (value === 'custom') {
+        customDates.classList.remove('hidden');
+    } else {
+        customDates.classList.add('hidden');
+    }
+}
+</script>
 {% endblock %}
