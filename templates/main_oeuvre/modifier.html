@@ -6,6 +6,21 @@
 {% block content %}
 <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
     <form method="POST" action="{{ url_for('main_oeuvre.modifier', id=ouvrier.id) }}" enctype="multipart/form-data" class="space-y-6">
+        <!-- Photo de profil -->
+        <div class="flex justify-center mb-6">
+            <div class="space-y-2 text-center">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 mx-auto overflow-hidden relative group cursor-pointer">
+                    {% if ouvrier.photo_profil %}
+                    <img src="{{ url_for('static', filename='uploads/' + ouvrier.photo_profil) }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <i class="fas fa-camera text-gray-400 text-2xl group-hover:text-primary-500"></i>
+                    {% endif %}
+                    <input type="file" name="photo_profil" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" title="Modifier la photo de profil">
+                </div>
+                <span class="text-xs text-gray-500">Photo de profil</span>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
                 <label for="nom" class="block text-sm font-medium text-gray-700 mb-2">Nom <span class="text-red-500">*</span></label>
@@ -17,14 +32,31 @@
             </div>
         </div>
 
-        <div>
-            <label for="chantier_id" class="block text-sm font-medium text-gray-700 mb-2">Chantier d'affectation</label>
-            <select name="chantier_id" id="chantier_id" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-                <option value="">-- Aucun (Non assigné) --</option>
-                {% for c in chantiers %}
-                <option value="{{ c.id }}" {% if ouvrier.chantier_id == c.id %}selected{% endif %}>{{ c.nom }}</option>
-                {% endfor %}
-            </select>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-2">
+                <label for="adresse" class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                <input type="text" name="adresse" id="adresse" value="{{ ouvrier.adresse or '' }}" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
+            </div>
+            <div>
+                <label for="ville" class="block text-sm font-medium text-gray-700 mb-2">Ville</label>
+                <input type="text" name="ville" id="ville" value="{{ ouvrier.ville or '' }}" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="nationalite" class="block text-sm font-medium text-gray-700 mb-2">Nationalité</label>
+                <input type="text" name="nationalite" id="nationalite" value="{{ ouvrier.nationalite or '' }}" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
+            </div>
+            <div>
+                <label for="chantier_id" class="block text-sm font-medium text-gray-700 mb-2">Chantier d'affectation</label>
+                <select name="chantier_id" id="chantier_id" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
+                    <option value="">-- Aucun (Non assigné) --</option>
+                    {% for c in chantiers %}
+                    <option value="{{ c.id }}" {% if ouvrier.chantier_id == c.id %}selected{% endif %}>{{ c.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
 
         <div>

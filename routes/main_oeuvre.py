@@ -59,6 +59,9 @@ def nouveau():
         poste = request.form.get('poste')
         chantier_id = request.form.get('chantier_id')
         cni = request.form.get('cni')
+        adresse = request.form.get('adresse')
+        ville = request.form.get('ville')
+        nationalite = request.form.get('nationalite')
 
         try:
             taux_horaire = float(request.form.get('taux_horaire', 0))
@@ -69,13 +72,21 @@ def nouveau():
             flash('Nom et Prénom sont obligatoires', 'danger')
             return render_template('main_oeuvre/nouveau.html', chantiers=chantiers)
 
-        # Handle Photo Upload
+        # Handle CNI Photo Upload
         photo = request.files.get('photo_cni')
         photo_filename = None
         if photo and photo.filename:
             photo_filename = save_photo(photo)
             if not photo_filename:
-                flash('Format de fichier non autorisé. Utilisez JPG, PNG ou GIF', 'warning')
+                flash('Format de fichier CNI non autorisé', 'warning')
+
+        # Handle Profile Photo Upload
+        photo_profil = request.files.get('photo_profil')
+        photo_profil_filename = None
+        if photo_profil and photo_profil.filename:
+            photo_profil_filename = save_photo(photo_profil)
+            if not photo_profil_filename:
+                flash('Format de photo de profil non autorisé', 'warning')
 
         # Validate chantier access
         if chantier_id:
@@ -97,7 +108,11 @@ def nouveau():
             poste=poste,
             taux_horaire=taux_horaire,
             cni=cni,
-            photo_cni=photo_filename
+            photo_cni=photo_filename,
+            adresse=adresse,
+            ville=ville,
+            nationalite=nationalite,
+            photo_profil=photo_profil_filename
         )
         db.session.add(ouvrier)
         db.session.commit()
@@ -134,16 +149,28 @@ def modifier(id):
         ouvrier.telephone = request.form.get('telephone')
         ouvrier.poste = request.form.get('poste')
         ouvrier.cni = request.form.get('cni')
+        ouvrier.adresse = request.form.get('adresse')
+        ouvrier.ville = request.form.get('ville')
+        ouvrier.nationalite = request.form.get('nationalite')
         chantier_id = request.form.get('chantier_id')
 
-        # Handle Photo Upload
+        # Handle CNI Photo Upload
         photo = request.files.get('photo_cni')
         if photo and photo.filename:
             photo_filename = save_photo(photo)
             if photo_filename:
                 ouvrier.photo_cni = photo_filename
             else:
-                flash('Format de fichier non autorisé', 'warning')
+                flash('Format de fichier CNI non autorisé', 'warning')
+
+        # Handle Profile Photo Upload
+        photo_p = request.files.get('photo_profil')
+        if photo_p and photo_p.filename:
+            photo_p_filename = save_photo(photo_p)
+            if photo_p_filename:
+                ouvrier.photo_profil = photo_p_filename
+            else:
+                flash('Format de photo de profil non autorisé', 'warning')
 
         if chantier_id:
              chantier_id = int(chantier_id)

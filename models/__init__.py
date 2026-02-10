@@ -178,7 +178,11 @@ class Ouvrier(db.Model):
     poste = db.Column(db.String(100))
     taux_horaire = db.Column(db.Float, default=0.0)
     cni = db.Column(db.String(100)) # Numéro CNI/Passeport/Séjour
-    photo_cni = db.Column(db.String(500)) # Chemin vers la photo
+    photo_cni = db.Column(db.String(500)) # Chemin vers la photo CNI
+    adresse = db.Column(db.String(500))
+    ville = db.Column(db.String(100))
+    nationalite = db.Column(db.String(100))
+    photo_profil = db.Column(db.String(500)) # Photo de l'ouvrier
     actif = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

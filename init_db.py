@@ -91,7 +91,7 @@ def init_database():
                 # Table might not exist yet if fresh install, which is fine
                 pass
 
-            # Check ouvriers table for CNI
+            # Check ouvriers table for CNI and Extra Info
             try:
                 columns = [c['name'] for c in inspector.get_columns('ouvriers')]
                 if 'cni' not in columns:
@@ -99,6 +99,15 @@ def init_database():
                     with db.engine.connect() as conn:
                         conn.execute(text("ALTER TABLE ouvriers ADD COLUMN cni VARCHAR(100)"))
                         conn.execute(text("ALTER TABLE ouvriers ADD COLUMN photo_cni VARCHAR(500)"))
+                        conn.commit()
+
+                if 'adresse' not in columns:
+                    print("Migration: Ajout adresse, ville, nationalite, photo_profil")
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN adresse VARCHAR(500)"))
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN ville VARCHAR(100)"))
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN nationalite VARCHAR(100)"))
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN photo_profil VARCHAR(500)"))
                         conn.commit()
             except Exception as e:
                 pass
