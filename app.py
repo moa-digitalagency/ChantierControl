@@ -42,6 +42,11 @@ def create_app():
     def index():
         return redirect(url_for('auth.login'))
 
+    @app.route('/demo-table')
+    def demo_table():
+        from flask import render_template
+        return render_template('demo_table.html')
+
     @app.route('/set_language/<lang_code>')
     def set_language(lang_code):
         if lang_code in ['fr', 'en']:
