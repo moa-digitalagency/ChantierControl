@@ -232,6 +232,8 @@ def parametres():
         entreprise.adresse = request.form.get('adresse', '').strip()
         entreprise.telephone = request.form.get('telephone', '').strip()
         entreprise.email = request.form.get('email', '').strip()
+        entreprise.timezone = request.form.get('timezone', 'UTC').strip()
+        entreprise.country = request.form.get('country', 'MA').strip()
 
         if not entreprise.nom:
             flash('Le nom de l\'entreprise est requis', 'danger')

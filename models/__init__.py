@@ -25,6 +25,8 @@ class Entreprise(db.Model):
     telephone = db.Column(db.String(20))
     email = db.Column(db.String(100))
     logo = db.Column(db.String(500))
+    timezone = db.Column(db.String(50), default='UTC')
+    country = db.Column(db.String(50), default='MA')
     actif = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     admin_principal_id = db.Column(db.Integer, db.ForeignKey('users.id', use_alter=True, name='fk_entreprise_admin'), nullable=True)

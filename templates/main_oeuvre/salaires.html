@@ -15,7 +15,7 @@
                          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                             <i class="fas fa-building"></i>
                         </div>
-                        <select name="chantier_id" id="chantier_id" onchange="this.form.submit()" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm pl-10 bg-gray-50 text-gray-700 font-medium">
+                        <select name="chantier_id" id="chantier_id" onchange="this.form.submit()" class="block w-full pl-10 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 bg-white text-gray-700">
                             <option value="">-- Tous les chantiers --</option>
                             {% for c in chantiers %}
                             <option value="{{ c.id }}" {% if selected_chantier_id == c.id %}selected{% endif %}>{{ c.nom }}</option>
@@ -26,7 +26,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-                <select name="filter" id="filterSelect" onchange="toggleCustomDates(this.value); if(this.value!='custom') this.form.submit()" class="block w-full md:w-48 rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-gray-50 text-gray-700 font-medium">
+                <select name="filter" id="filterSelect" onchange="toggleCustomDates(this.value); if(this.value!='custom') this.form.submit()" class="block w-full md:w-48 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 bg-white text-gray-700 font-medium">
                     <option value="day" {% if filter_type == 'day' %}selected{% endif %}>Aujourd'hui</option>
                     <option value="week" {% if filter_type == 'week' %}selected{% endif %}>Semaine (Lun-Dim)</option>
                     <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois (1-31)</option>
@@ -36,19 +36,19 @@
 
                 <div id="customDates" class="{% if filter_type != 'custom' %}hidden{% endif %} flex items-center gap-2 animate-fadeIn">
                      <div class="relative">
-                        <input type="date" name="start" value="{{ custom_start }}" class="block w-32 rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm pl-8">
+                        <input type="date" name="start" value="{{ custom_start }}" class="block w-32 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm pl-8 h-11">
                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
                             <i class="far fa-calendar"></i>
                         </div>
                     </div>
                     <span class="text-gray-400 font-medium">-</span>
                     <div class="relative">
-                        <input type="date" name="end" value="{{ custom_end }}" class="block w-32 rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm pl-8">
+                        <input type="date" name="end" value="{{ custom_end }}" class="block w-32 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm pl-8 h-11">
                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
                             <i class="far fa-calendar"></i>
                         </div>
                     </div>
-                    <button type="submit" class="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm">
+                    <button type="submit" class="p-2 h-11 w-11 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors shadow-sm flex items-center justify-center">
                         <i class="fas fa-check"></i>
                     </button>
                 </div>
@@ -107,7 +107,7 @@
                 <i class="fas fa-list text-gray-400"></i> Détails par Ouvrier
             </h3>
             <div class="relative">
-                <input type="text" id="tableSearch" placeholder="Rechercher un ouvrier..." class="text-sm border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 pl-9 w-64">
+                <input type="text" id="tableSearch" placeholder="Rechercher un ouvrier..." class="text-sm border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 pl-9 w-64 h-10">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                     <i class="fas fa-search"></i>
                 </div>
