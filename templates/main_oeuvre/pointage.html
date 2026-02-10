@@ -138,7 +138,7 @@
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="responsive-table w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-bold tracking-wide">
                             <th class="px-6 py-4 w-1/4">Ouvrier</th>
@@ -154,7 +154,7 @@
                         {% for ouvrier in ouvriers %}
                         {% set pointage = existing_pointages.get(ouvrier.id) %}
                         <tr class="hover:bg-gray-50 transition-colors group">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4" data-label="Ouvrier">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200 relative">
                                         {% if ouvrier.photo_profil %}
@@ -181,7 +181,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-2 py-4">
+                            <td class="px-2 py-4" data-label="Arrivée">
                                 <div class="relative group/input">
                                     <input type="time" name="check_in_{{ ouvrier.id }}"
                                            value="{{ pointage.check_in.strftime('%H:%M') if pointage and pointage.check_in else '' }}"
@@ -192,7 +192,7 @@
                                     </button>
                                 </div>
                             </td>
-                            <td class="px-2 py-4">
+                            <td class="px-2 py-4" data-label="Départ">
                                 <div class="relative group/input">
                                     <input type="time" name="check_out_{{ ouvrier.id }}"
                                            value="{{ pointage.check_out.strftime('%H:%M') if pointage and pointage.check_out else '' }}"
@@ -203,7 +203,7 @@
                                     </button>
                                 </div>
                             </td>
-                            <td class="px-2 py-4">
+                            <td class="px-2 py-4" data-label="Pause Début">
                                 <div class="relative group/input">
                                     <input type="time" name="break_start_{{ ouvrier.id }}"
                                            value="{{ pointage.break_start.strftime('%H:%M') if pointage and pointage.break_start else '' }}"
@@ -214,7 +214,7 @@
                                     </button>
                                 </div>
                             </td>
-                            <td class="px-2 py-4">
+                            <td class="px-2 py-4" data-label="Pause Fin">
                                 <div class="relative group/input">
                                     <input type="time" name="break_end_{{ ouvrier.id }}"
                                            value="{{ pointage.break_end.strftime('%H:%M') if pointage and pointage.break_end else '' }}"
@@ -225,12 +225,12 @@
                                     </button>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-6 py-4 text-center" data-label="Heures">
                                 <div class="bg-blue-50 text-blue-700 font-bold rounded-lg py-1 px-2 text-sm">
                                     <span id="hours_display_{{ ouvrier.id }}">0.00</span> h
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right" data-label="Total">
                                 <p class="font-bold text-gray-900"><span id="total_display_{{ ouvrier.id }}">0.00</span> <span class="text-xs text-gray-500 font-normal">MAD</span></p>
                                 <p class="text-[10px] text-gray-400">{{ ouvrier.taux_horaire }} MAD/h</p>
                             </td>
@@ -249,11 +249,11 @@
                     {% if ouvriers %}
                     <tfoot class="bg-gray-50 border-t border-gray-200">
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-right font-bold text-gray-700 uppercase text-xs tracking-wider">Totaux Journée</td>
-                            <td class="px-6 py-4 text-center font-bold text-gray-900 bg-blue-100/50 border-l border-r border-gray-200">
+                            <td colspan="5" class="px-6 py-4 text-right font-bold text-gray-700 uppercase text-xs tracking-wider" data-label="Total">Totaux Journée</td>
+                            <td class="px-6 py-4 text-center font-bold text-gray-900 bg-blue-100/50 border-l border-r border-gray-200" data-label="Total Heures">
                                 <span id="grand-total-hours">0.00</span> h
                             </td>
-                            <td class="px-6 py-4 text-right font-bold text-green-700 text-lg bg-green-50 border-l border-gray-200">
+                            <td class="px-6 py-4 text-right font-bold text-green-700 text-lg bg-green-50 border-l border-gray-200" data-label="Total Argent">
                                 <span id="grand-total-money">0.00</span> MAD
                             </td>
                         </tr>

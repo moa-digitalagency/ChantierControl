@@ -146,7 +146,7 @@
             </div>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="responsive-table min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold tracking-wider">
                     <tr>
                         <th class="px-6 py-3 text-left">Chantier</th>
@@ -163,19 +163,19 @@
                 <tbody class="bg-white divide-y divide-gray-200 text-sm">
                     {% for row in data %}
                     <tr class="hover:bg-gray-50 transition-colors group">
-                        <td class="px-6 py-4 font-medium text-gray-900 flex items-center gap-2">
+                        <td class="px-6 py-4 font-medium text-gray-900 flex items-center gap-2" data-label="Chantier">
                             <div class="w-2 h-2 rounded-full {% if row.reste > 0 %}bg-green-500{% else %}bg-red-500{% endif %}"></div>
                             {{ row.chantier.nom }}
                         </td>
-                        <td class="px-6 py-4 text-right text-gray-500 font-mono">{{ format_currency(row.budget) }}</td>
-                        <td class="px-6 py-4 text-right text-gray-500 font-mono">{{ format_currency(row.depenses) }}</td>
-                        <td class="px-6 py-4 text-right text-gray-500 font-mono">{{ format_currency(row.heures) }}</td>
-                        <td class="px-6 py-4 text-right text-yellow-600 font-mono">{{ format_currency(row.avances) }}</td>
-                        <td class="px-6 py-4 text-right font-bold text-gray-900 font-mono">{{ format_currency(row.total_spent) }}</td>
-                        <td class="px-6 py-4 text-right font-bold {% if row.reste < 0 %}text-red-600{% else %}text-green-600{% endif %} font-mono">
+                        <td class="px-6 py-4 text-right text-gray-500 font-mono" data-label="Budget">{{ format_currency(row.budget) }}</td>
+                        <td class="px-6 py-4 text-right text-gray-500 font-mono" data-label="Dépenses">{{ format_currency(row.depenses) }}</td>
+                        <td class="px-6 py-4 text-right text-gray-500 font-mono" data-label="M.O.">{{ format_currency(row.heures) }}</td>
+                        <td class="px-6 py-4 text-right text-yellow-600 font-mono" data-label="Avances">{{ format_currency(row.avances) }}</td>
+                        <td class="px-6 py-4 text-right font-bold text-gray-900 font-mono" data-label="Total">{{ format_currency(row.total_spent) }}</td>
+                        <td class="px-6 py-4 text-right font-bold {% if row.reste < 0 %}text-red-600{% else %}text-green-600{% endif %} font-mono" data-label="Reste">
                             {{ format_currency(row.reste) }}
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4 text-center" data-label="État">
                              <div class="flex items-center justify-center gap-2" title="{{ row.consommation_pct|round(1) }}%">
                                 <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                     <div class="h-full rounded-full {% if row.consommation_pct > 100 %}bg-red-500{% elif row.consommation_pct > 80 %}bg-yellow-500{% else %}bg-green-500{% endif %}"
@@ -183,7 +183,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4 text-center" data-label="Actions">
                             <a href="{{ url_for('finance.details', chantier_id=row.chantier.id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-primary-100 hover:text-primary-600 transition-colors" title="Voir détails">
                                 <i class="fas fa-eye"></i>
                             </a>

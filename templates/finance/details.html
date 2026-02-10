@@ -120,7 +120,7 @@
         <div class="p-0">
             <!-- Achats Tab -->
             <div x-show="tab === 'achats'" class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="responsive-table min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
@@ -133,15 +133,15 @@
                     <tbody class="divide-y divide-gray-200 bg-white">
                         {% for achat in achats %}
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ achat.date_achat.strftime('%d/%m/%Y') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ achat.fournisseur }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600" data-label="Date">{{ achat.date_achat.strftime('%d/%m/%Y') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" data-label="Fournisseur">{{ achat.fournisseur }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap" data-label="Catégorie">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 capitalize">
                                     {{ achat.categorie }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="{{ achat.description }}">{{ achat.description }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">{{ format_currency(achat.montant) }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="{{ achat.description }}" data-label="Description">{{ achat.description }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900" data-label="Montant">{{ format_currency(achat.montant) }}</td>
                         </tr>
                         {% else %}
                         <tr>
@@ -154,7 +154,7 @@
 
             <!-- MO Tab -->
             <div x-show="tab === 'mo'" class="overflow-x-auto" style="display: none;">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="responsive-table min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
@@ -166,10 +166,10 @@
                     <tbody class="divide-y divide-gray-200 bg-white">
                         {% for p in pointages %}
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ p.date_pointage.strftime('%d/%m/%Y') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ p.ouvrier.nom }} {{ p.ouvrier.prenom }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600">{{ p.heures }} h</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">{{ format_currency(p.montant) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600" data-label="Date">{{ p.date_pointage.strftime('%d/%m/%Y') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" data-label="Ouvrier">{{ p.ouvrier.nom }} {{ p.ouvrier.prenom }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600" data-label="Heures">{{ p.heures }} h</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900" data-label="Montant">{{ format_currency(p.montant) }}</td>
                         </tr>
                         {% else %}
                         <tr>
