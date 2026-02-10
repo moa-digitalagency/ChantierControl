@@ -67,7 +67,7 @@
     <!-- Workers List -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-100">
+            <table class="responsive-table min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ouvrier</th>
@@ -80,7 +80,7 @@
                 <tbody class="bg-white divide-y divide-gray-50">
                     {% for ouvrier in ouvriers %}
                     <tr class="hover:bg-gray-50/80 transition-colors group">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap" data-label="Ouvrier">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10 relative">
                                     {% if ouvrier.photo_profil %}
@@ -101,7 +101,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap" data-label="Chantier Actuel">
                             {% if ouvrier.chantier %}
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                                     <i class="fas fa-hard-hat mr-1.5 mt-0.5 opacity-70"></i> {{ ouvrier.chantier.nom }}
@@ -112,7 +112,7 @@
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap" data-label="Coordonnées">
                             <div class="text-sm text-gray-700 flex items-center gap-2">
                                 <div class="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
                                     <i class="fas fa-phone-alt text-xs"></i>
@@ -123,11 +123,11 @@
                                 {% if ouvrier.ville %}{{ ouvrier.ville }}{% endif %}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <td class="px-6 py-4 whitespace-nowrap text-right" data-label="Taux Horaire">
                             <span class="text-sm font-bold text-gray-900">{{ "{:,.2f}".format(ouvrier.taux_horaire) }}</span>
                             <span class="text-xs text-gray-500 font-medium">MAD/h</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <td class="px-6 py-4 whitespace-nowrap text-center" data-label="Actions">
                             <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
                                 <a href="{{ url_for('main_oeuvre.details', id=ouvrier.id) }}" class="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors tooltip" data-tip="Voir Fiche">
                                     <i class="fas fa-eye text-lg"></i>
