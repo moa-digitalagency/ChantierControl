@@ -21,17 +21,28 @@ def index():
 
     query = Ouvrier.query.filter_by(entreprise_id=user.entreprise_id, actif=True)
 
-    if chantier_id:
-        query = query.filter_by(chantier_id=chantier_id)
-
-    ouvriers = query.all()
-
     # Get chantiers list for filter
-    if user.role in ['admin', 'direction']:
+    if user.role in ['admin', 'direction', 'super_admin']:
         chantiers = Chantier.query.filter_by(entreprise_id=user.entreprise_id, statut='en_cours').all()
+        if chantier_id:
+            query = query.filter_by(chantier_id=chantier_id)
     else:
         assignments = user.assignments.filter_by(actif=True).all()
         chantiers = [a.chantier for a in assignments if a.chantier.statut == 'en_cours']
+        allowed_ids = [c.id for c in chantiers]
+
+        if chantier_id:
+            if chantier_id not in allowed_ids:
+                flash("Accès non autorisé à ce chantier", "danger")
+                return redirect(url_for('dashboard.index'))
+            query = query.filter_by(chantier_id=chantier_id)
+        else:
+            if allowed_ids:
+                query = query.filter(Ouvrier.chantier_id.in_(allowed_ids))
+            else:
+                query = query.filter(db.false()) # No assignments, no workers
+
+    ouvriers = query.all()
 
     return render_template('main_oeuvre/index.html', ouvriers=ouvriers, chantiers=chantiers, selected_chantier_id=chantier_id)
 
@@ -97,6 +108,10 @@ def nouveau():
                  flash('Accès non autorisé à ce chantier', 'danger')
                  return render_template('main_oeuvre/nouveau.html', chantiers=chantiers)
         else:
+            # Enforce chantier selection for Chef de Chantier
+            if user.role not in ['admin', 'direction', 'super_admin']:
+                flash('Vous devez assigner un chantier à l\'ouvrier', 'danger')
+                return render_template('main_oeuvre/nouveau.html', chantiers=chantiers)
             chantier_id = None
 
         ouvrier = Ouvrier(
@@ -235,15 +250,30 @@ def pointage():
             flash("Accès non autorisé", "danger")
             return redirect(url_for('dashboard.index'))
 
-        # Only show workers assigned to this chantier OR not assigned to any (if that logic is desired, but user said "par chantier")
-        # Let's strictly filter by chantier_id for the list, but maybe allow listing all if we want to add them?
-        # User request: "enregistre chaque ouvrier par chantier... utiliser partout... pointage"
-        # So Pointage should list only workers of that chantier.
-        ouvriers = Ouvrier.query.filter_by(
+        # Security: Chef de Chantier check
+        if user.role not in ['admin', 'direction', 'super_admin']:
+             assignment = user.assignments.filter_by(chantier_id=selected_chantier_id, actif=True).first()
+             if not assignment:
+                 flash("Accès non autorisé", "danger")
+                 return redirect(url_for('dashboard.index'))
+
+        # 1. Get workers whose PRIMARY assignment is this chantier
+        assigned_workers = Ouvrier.query.filter_by(
             entreprise_id=user.entreprise_id,
             chantier_id=selected_chantier_id,
             actif=True
         ).all()
+
+        # 2. Get workers who are NOT assigned here but have a Pointage here today (visiting workers)
+        # This allows the Chef to manage them once they've been added (even if added by a higher up or previous logic)
+        visiting_workers = db.session.query(Ouvrier).join(Pointage).filter(
+            Pointage.chantier_id == selected_chantier_id,
+            Pointage.date_pointage == selected_date,
+            Ouvrier.chantier_id != selected_chantier_id, # Avoid duplicates
+            Ouvrier.entreprise_id == user.entreprise_id
+        ).all()
+
+        ouvriers = assigned_workers + visiting_workers
 
         # Load existing pointages for this date/chantier
         pointages_query = Pointage.query.filter_by(
