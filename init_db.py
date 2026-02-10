@@ -79,6 +79,18 @@ def init_database():
                     conn.execute(text("ALTER TABLE heures ADD COLUMN remarque_modification TEXT"))
                     conn.commit()
 
+            # Check ouvriers table
+            try:
+                columns = [c['name'] for c in inspector.get_columns('ouvriers')]
+                if 'chantier_id' not in columns:
+                    print("Migration: Ajout de chantier_id à la table ouvriers")
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN chantier_id INTEGER REFERENCES chantiers(id)"))
+                        conn.commit()
+            except Exception as e:
+                # Table might not exist yet if fresh install, which is fine
+                pass
+
         except Exception as e:
             print(f"Erreur lors de l'initialisation de la base: {e}")
             # Continue execution to allow super admin check

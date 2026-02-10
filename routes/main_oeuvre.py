@@ -15,19 +15,49 @@ def index():
         flash("Erreur: Utilisateur sans entreprise.", "danger")
         return redirect(url_for('dashboard.index'))
 
-    ouvriers = Ouvrier.query.filter_by(entreprise_id=user.entreprise_id, actif=True).all()
-    return render_template('main_oeuvre/index.html', ouvriers=ouvriers)
+    # Filter by chantier if requested
+    chantier_id = request.args.get('chantier_id', type=int)
+
+    query = Ouvrier.query.filter_by(entreprise_id=user.entreprise_id, actif=True)
+
+    if chantier_id:
+        query = query.filter_by(chantier_id=chantier_id)
+
+    ouvriers = query.all()
+
+    # Get chantiers list for filter
+    if user.role in ['admin', 'direction']:
+        chantiers = Chantier.query.filter_by(entreprise_id=user.entreprise_id, statut='en_cours').all()
+    else:
+        assignments = user.assignments.filter_by(actif=True).all()
+        chantiers = [a.chantier for a in assignments if a.chantier.statut == 'en_cours']
+
+    return render_template('main_oeuvre/index.html', ouvriers=ouvriers, chantiers=chantiers, selected_chantier_id=chantier_id)
 
 @main_oeuvre_bp.route('/nouveau', methods=['GET', 'POST'])
-@direction_required
+@login_required
 def nouveau():
+    # Changed from @direction_required to @login_required to allow chefs chantier (per user request context)
+    # But stricter check inside:
     user = get_current_user()
+    if user.role not in ['admin', 'direction', 'chef_chantier', 'super_admin']:
+         flash("Accès non autorisé", "danger")
+         return redirect(url_for('main_oeuvre.index'))
+
+    # Get chantiers list
+    if user.role in ['admin', 'direction', 'super_admin']:
+        chantiers = Chantier.query.filter_by(entreprise_id=user.entreprise_id, statut='en_cours').all()
+    else:
+        assignments = user.assignments.filter_by(actif=True).all()
+        chantiers = [a.chantier for a in assignments if a.chantier.statut == 'en_cours']
 
     if request.method == 'POST':
         nom = request.form.get('nom')
         prenom = request.form.get('prenom')
         telephone = request.form.get('telephone')
         poste = request.form.get('poste')
+        chantier_id = request.form.get('chantier_id')
+
         try:
             taux_horaire = float(request.form.get('taux_horaire', 0))
         except ValueError:
@@ -35,10 +65,22 @@ def nouveau():
 
         if not nom or not prenom:
             flash('Nom et Prénom sont obligatoires', 'danger')
-            return render_template('main_oeuvre/nouveau.html')
+            return render_template('main_oeuvre/nouveau.html', chantiers=chantiers)
+
+        # Validate chantier access
+        if chantier_id:
+            chantier_id = int(chantier_id)
+            # Check if user has access to this chantier
+            allowed_ids = [c.id for c in chantiers]
+            if chantier_id not in allowed_ids:
+                 flash('Accès non autorisé à ce chantier', 'danger')
+                 return render_template('main_oeuvre/nouveau.html', chantiers=chantiers)
+        else:
+            chantier_id = None
 
         ouvrier = Ouvrier(
             entreprise_id=user.entreprise_id,
+            chantier_id=chantier_id,
             nom=nom,
             prenom=prenom,
             telephone=telephone,
@@ -51,29 +93,56 @@ def nouveau():
         flash('Ouvrier ajouté avec succès', 'success')
         return redirect(url_for('main_oeuvre.index'))
 
-    return render_template('main_oeuvre/nouveau.html')
+    return render_template('main_oeuvre/nouveau.html', chantiers=chantiers)
 
 @main_oeuvre_bp.route('/<int:id>/modifier', methods=['GET', 'POST'])
-@direction_required
+@login_required
 def modifier(id):
     user = get_current_user()
     ouvrier = Ouvrier.query.filter_by(id=id, entreprise_id=user.entreprise_id).first_or_404()
+
+    if user.role not in ['admin', 'direction', 'super_admin']:
+        # Check if chef chantier has access to this worker's chantier
+        assignments = user.assignments.filter_by(actif=True).all()
+        allowed_ids = [a.chantier_id for a in assignments]
+        if not ouvrier.chantier_id or ouvrier.chantier_id not in allowed_ids:
+             flash("Accès non autorisé", "danger")
+             return redirect(url_for('main_oeuvre.index'))
+
+    # Get chantiers list for dropdown
+    if user.role in ['admin', 'direction', 'super_admin']:
+        chantiers = Chantier.query.filter_by(entreprise_id=user.entreprise_id, statut='en_cours').all()
+    else:
+        assignments = user.assignments.filter_by(actif=True).all()
+        chantiers = [a.chantier for a in assignments if a.chantier.statut == 'en_cours']
 
     if request.method == 'POST':
         ouvrier.nom = request.form.get('nom')
         ouvrier.prenom = request.form.get('prenom')
         ouvrier.telephone = request.form.get('telephone')
         ouvrier.poste = request.form.get('poste')
+        chantier_id = request.form.get('chantier_id')
+
+        if chantier_id:
+             chantier_id = int(chantier_id)
+             allowed_ids_c = [c.id for c in chantiers]
+             if chantier_id in allowed_ids_c:
+                 ouvrier.chantier_id = chantier_id
+             else:
+                 flash('Chantier non autorisé', 'warning')
+        else:
+             ouvrier.chantier_id = None
+
         try:
             ouvrier.taux_horaire = float(request.form.get('taux_horaire', 0))
         except ValueError:
-            pass # Keep old value or handle error
+            pass
 
         db.session.commit()
         flash('Ouvrier modifié avec succès', 'success')
         return redirect(url_for('main_oeuvre.index'))
 
-    return render_template('main_oeuvre/modifier.html', ouvrier=ouvrier)
+    return render_template('main_oeuvre/modifier.html', ouvrier=ouvrier, chantiers=chantiers)
 
 @main_oeuvre_bp.route('/<int:id>/supprimer', methods=['POST'])
 @direction_required
@@ -117,7 +186,15 @@ def pointage():
             flash("Accès non autorisé", "danger")
             return redirect(url_for('dashboard.index'))
 
-        ouvriers = Ouvrier.query.filter_by(entreprise_id=user.entreprise_id, actif=True).all()
+        # Only show workers assigned to this chantier OR not assigned to any (if that logic is desired, but user said "par chantier")
+        # Let's strictly filter by chantier_id for the list, but maybe allow listing all if we want to add them?
+        # User request: "enregistre chaque ouvrier par chantier... utiliser partout... pointage"
+        # So Pointage should list only workers of that chantier.
+        ouvriers = Ouvrier.query.filter_by(
+            entreprise_id=user.entreprise_id,
+            chantier_id=selected_chantier_id,
+            actif=True
+        ).all()
 
         # Load existing pointages for this date/chantier
         pointages_query = Pointage.query.filter_by(
@@ -260,3 +337,73 @@ def import_ouvriers():
             print(e)
 
     return redirect(url_for('main_oeuvre.index'))
+@main_oeuvre_bp.route('/salaires', methods=['GET'])
+@login_required
+def salaires():
+    user = get_current_user()
+    if not user.entreprise_id:
+        return redirect(url_for('dashboard.index'))
+
+    # Filter params
+    chantier_id = request.args.get('chantier_id', type=int)
+    month = request.args.get('month', date.today().strftime('%Y-%m'))
+
+    try:
+        start_date = datetime.strptime(month, '%Y-%m').date()
+        # End date is start of next month - 1 day
+        if start_date.month == 12:
+            end_date = date(start_date.year + 1, 1, 1)
+        else:
+            end_date = date(start_date.year, start_date.month + 1, 1)
+    except ValueError:
+        start_date = date.today().replace(day=1)
+        if start_date.month == 12:
+            end_date = date(start_date.year + 1, 1, 1)
+        else:
+            end_date = date(start_date.year, start_date.month + 1, 1)
+
+    # Chantiers list
+    if user.role in ['admin', 'direction']:
+        chantiers = Chantier.query.filter_by(entreprise_id=user.entreprise_id).all()
+    else:
+        assignments = user.assignments.filter_by(actif=True).all()
+        chantiers = [a.chantier for a in assignments]
+
+    # Query Pointages
+    query = Pointage.query.join(Ouvrier).filter(Ouvrier.entreprise_id == user.entreprise_id)
+
+    if chantier_id:
+        query = query.filter(Pointage.chantier_id == chantier_id)
+    elif user.role not in ['admin', 'direction']:
+        # Filter by allowed chantiers
+        allowed_ids = [c.id for c in chantiers]
+        query = query.filter(Pointage.chantier_id.in_(allowed_ids))
+
+    query = query.filter(Pointage.date_pointage >= start_date, Pointage.date_pointage < end_date)
+
+    pointages = query.all()
+
+    # Aggregate by Worker
+    salary_data = {}
+    for p in pointages:
+        if p.ouvrier_id not in salary_data:
+            salary_data[p.ouvrier_id] = {
+                'ouvrier': p.ouvrier,
+                'total_heures': 0,
+                'total_montant': 0,
+                'jours_travailles': set()
+            }
+
+        salary_data[p.ouvrier_id]['total_heures'] += p.heures
+        salary_data[p.ouvrier_id]['total_montant'] += p.montant
+        salary_data[p.ouvrier_id]['jours_travailles'].add(p.date_pointage)
+
+    # Convert set length
+    for k, v in salary_data.items():
+        v['jours_count'] = len(v['jours_travailles'])
+
+    return render_template('main_oeuvre/salaires.html',
+                           salary_data=salary_data,
+                           chantiers=chantiers,
+                           selected_chantier_id=chantier_id,
+                           selected_month=month)

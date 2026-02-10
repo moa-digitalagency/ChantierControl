@@ -171,6 +171,7 @@ class Ouvrier(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     entreprise_id = db.Column(db.Integer, db.ForeignKey('entreprises.id'), nullable=False)
+    chantier_id = db.Column(db.Integer, db.ForeignKey('chantiers.id'), nullable=True) # Linked to a specific site
     nom = db.Column(db.String(100), nullable=False)
     prenom = db.Column(db.String(100), nullable=False)
     telephone = db.Column(db.String(20))
@@ -180,6 +181,7 @@ class Ouvrier(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     entreprise = db.relationship('Entreprise', backref=db.backref('ouvriers', lazy='dynamic'))
+    chantier = db.relationship('Chantier', backref=db.backref('ouvriers', lazy='dynamic'))
     pointages = db.relationship('Pointage', back_populates='ouvrier', lazy='dynamic')
 
 class Pointage(db.Model):

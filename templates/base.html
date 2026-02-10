@@ -122,9 +122,13 @@
                                     <i class="fas fa-building"></i>
                                     <span class="font-medium">{{ t('sidebar_chantiers') }}</span>
                                 </a>
-                                <a href="{{ url_for('main_oeuvre.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'main_oeuvre' in request.endpoint %}active{% endif %}">
+                                <a href="{{ url_for('main_oeuvre.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'main_oeuvre.index' in request.endpoint or 'main_oeuvre.nouveau' in request.endpoint %}active{% endif %}">
                                     <i class="fas fa-hard-hat"></i>
-                                    <span class="font-medium">Main d'œuvre</span>
+                                    <span class="font-medium">Ouvriers</span>
+                                </a>
+                                <a href="{{ url_for('main_oeuvre.salaires') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'main_oeuvre.salaires' in request.endpoint %}active{% endif %}">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                    <span class="font-medium">Salaires</span>
                                 </a>
                                 <a href="{{ url_for('finance.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'finance' in request.endpoint %}active{% endif %}">
                                     <i class="fas fa-chart-line"></i>
@@ -158,9 +162,9 @@
                                     <i class="fas fa-building"></i>
                                     <span class="font-medium">{{ t('sidebar_my_chantiers') }}</span>
                                 </a>
-                                <a href="{{ url_for('main_oeuvre.pointage') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'main_oeuvre' in request.endpoint %}active{% endif %}">
+                                <a href="{{ url_for('main_oeuvre.index') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'main_oeuvre.index' in request.endpoint %}active{% endif %}">
                                     <i class="fas fa-hard-hat"></i>
-                                    <span class="font-medium">Main d'œuvre</span>
+                                    <span class="font-medium">Ouvriers</span>
                                 </a>
                                 {% if role == 'direction' %}
                                 <a href="{{ url_for('users.liste') }}" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 {% if 'users' in request.endpoint %}active{% endif %}">

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block page_title %}Salaires & Pointages{% endblock %}
+{% block page_subtitle %}Rapport mensuel par chantier{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <form method="GET" action="{{ url_for('main_oeuvre.salaires') }}" class="flex flex-col md:flex-row gap-4 items-end">
+            <div class="flex-1 w-full">
+                <label for="chantier_id" class="block text-sm font-medium text-gray-700 mb-2">Chantier</label>
+                <select name="chantier_id" id="chantier_id" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors" onchange="this.form.submit()">
+                    <option value="">-- Tous les chantiers --</option>
+                    {% for c in chantiers %}
+                    <option value="{{ c.id }}" {% if selected_chantier_id == c.id %}selected{% endif %}>{{ c.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="w-full md:w-48">
+                <label for="month" class="block text-sm font-medium text-gray-700 mb-2">Mois</label>
+                <input type="month" name="month" id="month" value="{{ selected_month }}" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors" onchange="this.form.submit()">
+            </div>
+            <a href="{{ url_for('main_oeuvre.index') }}" class="w-full md:w-auto px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-center">
+                Liste Ouvriers
+            </a>
+        </form>
+    </div>
+
+    <!-- Results -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold tracking-wide">
+                        <th class="px-6 py-4">Ouvrier</th>
+                        <th class="px-6 py-4">Poste</th>
+                        <th class="px-6 py-4 text-center">Jours Travaillés</th>
+                        <th class="px-6 py-4 text-center">Total Heures</th>
+                        <th class="px-6 py-4 text-right">Taux Horaire</th>
+                        <th class="px-6 py-4 text-right">Salaire Total</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for ouvrier_id, data in salary_data.items() %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-gray-900">
+                            {{ data.ouvrier.nom }} {{ data.ouvrier.prenom }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 text-sm">
+                            {{ data.ouvrier.poste or '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-center text-gray-700">
+                            {{ data.jours_count }}
+                        </td>
+                        <td class="px-6 py-4 text-center font-bold text-gray-700">
+                            {{ data.total_heures }}
+                        </td>
+                        <td class="px-6 py-4 text-right text-gray-500 text-sm">
+                            {{ format_currency(data.ouvrier.taux_horaire) }}
+                        </td>
+                        <td class="px-6 py-4 text-right font-bold text-green-600 text-lg">
+                            {{ format_currency(data.total_montant) }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                            Aucune donnée pour cette période.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if salary_data %}
+                <tfoot class="bg-gray-50 border-t border-gray-200">
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-right font-bold text-gray-900 uppercase text-xs tracking-wider">Total Salaires</td>
+                        <td class="px-6 py-4 text-right font-bold text-primary-700 text-xl">
+                            {% set total_global = salary_data.values() | sum(attribute='total_montant') %}
+                            {{ format_currency(total_global) }}
+                        </td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
