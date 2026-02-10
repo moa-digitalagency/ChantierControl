@@ -3,6 +3,7 @@ import uuid
 from werkzeug.utils import secure_filename
 from PIL import Image
 import imghdr
+from markupsafe import Markup
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ALLOWED_MIME_TYPES = {'image/png', 'image/jpeg', 'image/gif'}
@@ -54,8 +55,15 @@ def save_photo(file, upload_folder='static/uploads'):
 
 def format_currency(value):
     if value is None:
-        return "0 MAD"
-    return f"{value:,.2f} MAD".replace(',', ' ')
+        return Markup("0 MAD")
+
+    formatted_value = f"{value:,.2f}".replace(',', ' ')
+
+    # If the value is large (>= 100,000), reduce font size and break the currency to the next line
+    if value >= 100000:
+        return Markup(f"<span class='text-lg tracking-tight font-bold'>{formatted_value}</span><br><span class='text-xs text-gray-500 font-normal'>MAD</span>")
+
+    return Markup(f"{formatted_value} MAD")
 
 def format_percentage(value):
     if value is None:

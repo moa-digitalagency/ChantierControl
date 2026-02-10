@@ -211,3 +211,31 @@ def nouveau_chantier():
         return redirect(url_for('admin.index'))
     
     return render_template('admin/chantier_form.html', entreprise=entreprise)
+
+@admin_bp.route('/parametres', methods=['GET', 'POST'])
+@admin_required
+def parametres():
+    current_user = get_current_user()
+
+    if current_user.role == 'super_admin':
+        return redirect(url_for('superadmin.parametres'))
+
+    entreprise = current_user.entreprise
+    if not entreprise:
+        flash('Aucune entreprise associée', 'danger')
+        return redirect(url_for('admin.index'))
+
+    if request.method == 'POST':
+        entreprise.nom = request.form.get('nom', '').strip()
+        entreprise.adresse = request.form.get('adresse', '').strip()
+        entreprise.telephone = request.form.get('telephone', '').strip()
+        entreprise.email = request.form.get('email', '').strip()
+
+        if not entreprise.nom:
+            flash('Le nom de l\'entreprise est requis', 'danger')
+        else:
+            db.session.commit()
+            flash('Paramètres mis à jour avec succès', 'success')
+            return redirect(url_for('admin.parametres'))
+
+    return render_template('admin/settings.html', entreprise=entreprise)
