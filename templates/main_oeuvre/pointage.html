@@ -38,7 +38,90 @@
     </div>
 
     {% if selected_chantier_id %}
-    <form method="POST" action="{{ url_for('main_oeuvre.pointage', chantier_id=selected_chantier_id, date=selected_date) }}">
+
+    <!-- Mode Toggle -->
+    <div class="flex justify-center mb-6">
+        <div class="bg-white rounded-xl p-1 shadow-sm border border-gray-200 inline-flex">
+            <button onclick="switchMode('direct')" id="btn-mode-direct" class="px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 text-gray-500 hover:text-gray-900">
+                <i class="fas fa-fingerprint mr-2"></i>Pointage Direct
+            </button>
+            <button onclick="switchMode('manuel')" id="btn-mode-manuel" class="px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 bg-primary-50 text-primary-700 shadow-sm">
+                <i class="fas fa-edit mr-2"></i>Saisie Manuelle
+            </button>
+        </div>
+    </div>
+
+    <!-- Mode Pointage Direct -->
+    <div id="mode-direct" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for ouvrier in ouvriers %}
+            {% set pointage = existing_pointages.get(ouvrier.id) %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4 relative overflow-hidden group hover:shadow-md transition-shadow">
+                 <!-- Status Indicator Strip -->
+                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-gray-200 transition-colors" id="status-strip-{{ ouvrier.id }}"></div>
+
+                 <div class="flex items-start justify-between pl-3">
+                     <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200">
+                            {% if ouvrier.photo_profil %}
+                            <img src="{{ url_for('static', filename='uploads/' + ouvrier.photo_profil) }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center text-gray-400"><i class="fas fa-user"></i></div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900">{{ ouvrier.nom }} {{ ouvrier.prenom }}</h4>
+                            <p class="text-xs text-gray-500">{{ ouvrier.poste or 'Poste non défini' }}</p>
+                        </div>
+                     </div>
+                     <div class="text-right">
+                         <span class="block text-xl font-bold text-primary-600" id="direct-hours-{{ ouvrier.id }}">{{ "%.2f"|format(pointage.heures) if pointage else "0.00" }} h</span>
+                         <span class="text-[10px] text-gray-400 font-mono">TOTAL</span>
+                     </div>
+                 </div>
+
+                 <!-- Time Display -->
+                 <div class="grid grid-cols-2 gap-2 text-xs pl-3 bg-gray-50 rounded-lg p-2 border border-gray-100">
+                     <div class="flex justify-between">
+                         <span class="text-gray-500">Arrivée:</span>
+                         <span class="font-mono font-bold text-gray-700" id="time-arrivee-{{ ouvrier.id }}">{{ pointage.check_in.strftime('%H:%M') if pointage and pointage.check_in else '--:--' }}</span>
+                     </div>
+                     <div class="flex justify-between">
+                         <span class="text-gray-500">Départ:</span>
+                         <span class="font-mono font-bold text-gray-700" id="time-depart-{{ ouvrier.id }}">{{ pointage.check_out.strftime('%H:%M') if pointage and pointage.check_out else '--:--' }}</span>
+                     </div>
+                     <div class="flex justify-between">
+                         <span class="text-gray-500">Pause:</span>
+                         <span class="font-mono font-bold text-gray-700" id="time-pause-{{ ouvrier.id }}">{{ pointage.break_start.strftime('%H:%M') if pointage and pointage.break_start else '--:--' }}</span>
+                     </div>
+                     <div class="flex justify-between">
+                         <span class="text-gray-500">Reprise:</span>
+                         <span class="font-mono font-bold text-gray-700" id="time-reprise-{{ ouvrier.id }}">{{ pointage.break_end.strftime('%H:%M') if pointage and pointage.break_end else '--:--' }}</span>
+                     </div>
+                 </div>
+
+                 <!-- Action Buttons -->
+                 <div class="grid grid-cols-2 gap-3 pl-3 mt-auto">
+                     <button onclick="submitAction({{ ouvrier.id }}, 'arrivee')" class="flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 hover:text-green-800 transition-colors text-sm font-bold border border-green-100">
+                         <i class="fas fa-sign-in-alt"></i> Arrivée
+                     </button>
+                     <button onclick="submitAction({{ ouvrier.id }}, 'depart')" class="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 hover:text-red-800 transition-colors text-sm font-bold border border-red-100">
+                         <i class="fas fa-sign-out-alt"></i> Départ
+                     </button>
+                     <button onclick="submitAction({{ ouvrier.id }}, 'pause')" class="flex items-center justify-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 hover:text-yellow-800 transition-colors text-sm font-bold border border-yellow-100">
+                         <i class="fas fa-coffee"></i> Pause
+                     </button>
+                     <button onclick="submitAction({{ ouvrier.id }}, 'reprise')" class="flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 hover:text-blue-800 transition-colors text-sm font-bold border border-blue-100">
+                         <i class="fas fa-play"></i> Reprise
+                     </button>
+                 </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Mode Saisie Manuelle -->
+    <form method="POST" id="mode-manuel" action="{{ url_for('main_oeuvre.pointage', chantier_id=selected_chantier_id, date=selected_date) }}">
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                 <div class="flex items-center gap-2">
@@ -313,6 +396,79 @@
 
         // Initial calculation
         updateAllTotals();
+
+        // Load saved mode
+        const savedMode = localStorage.getItem('pointage_mode') || 'manuel';
+        switchMode(savedMode);
     });
+
+    function switchMode(mode) {
+        const btnDirect = document.getElementById('btn-mode-direct');
+        const btnManuel = document.getElementById('btn-mode-manuel');
+        const divDirect = document.getElementById('mode-direct');
+        const divManuel = document.getElementById('mode-manuel');
+
+        if (mode === 'direct') {
+            btnDirect.classList.remove('text-gray-500', 'hover:text-gray-900');
+            btnDirect.classList.add('bg-primary-50', 'text-primary-700', 'shadow-sm');
+
+            btnManuel.classList.remove('bg-primary-50', 'text-primary-700', 'shadow-sm');
+            btnManuel.classList.add('text-gray-500', 'hover:text-gray-900');
+
+            divDirect.classList.remove('hidden');
+            divManuel.classList.add('hidden');
+        } else {
+            btnManuel.classList.remove('text-gray-500', 'hover:text-gray-900');
+            btnManuel.classList.add('bg-primary-50', 'text-primary-700', 'shadow-sm');
+
+            btnDirect.classList.remove('bg-primary-50', 'text-primary-700', 'shadow-sm');
+            btnDirect.classList.add('text-gray-500', 'hover:text-gray-900');
+
+            divManuel.classList.remove('hidden');
+            divDirect.classList.add('hidden');
+        }
+        localStorage.setItem('pointage_mode', mode);
+    }
+
+    function submitAction(ouvrierId, action) {
+        const chantierId = new URLSearchParams(window.location.search).get('chantier_id');
+
+        fetch(`/main_oeuvre/pointage/action/${ouvrierId}/${action}?chantier_id=${chantierId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update UI
+                if(data.check_in) document.getElementById(`time-arrivee-${ouvrierId}`).textContent = data.check_in;
+                if(data.check_out) document.getElementById(`time-depart-${ouvrierId}`).textContent = data.check_out;
+                if(data.break_start) document.getElementById(`time-pause-${ouvrierId}`).textContent = data.break_start;
+                if(data.break_end) document.getElementById(`time-reprise-${ouvrierId}`).textContent = data.break_end;
+
+                if(data.heures) document.getElementById(`direct-hours-${ouvrierId}`).textContent = data.heures + " h";
+
+                // Visual feedback
+                const strip = document.getElementById(`status-strip-${ouvrierId}`);
+                if (action === 'arrivee') strip.classList.replace('bg-gray-200', 'bg-green-500') || strip.classList.add('bg-green-500');
+                if (action === 'depart') strip.className = 'absolute left-0 top-0 bottom-0 w-1 bg-gray-400 transition-colors';
+
+                // Toast or notification could be added here
+                // For now, maybe a small animation
+                const card = document.getElementById(`time-arrivee-${ouvrierId}`).closest('.bg-white');
+                card.classList.add('ring-2', 'ring-green-400');
+                setTimeout(() => card.classList.remove('ring-2', 'ring-green-400'), 500);
+
+            } else {
+                alert('Erreur: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue.');
+        });
+    }
 </script>
 {% endblock %}

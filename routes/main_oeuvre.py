@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from models import db, Ouvrier, Pointage, Chantier, User
 from security import login_required, get_current_user, direction_required
 from datetime import datetime, date, timedelta, time
@@ -316,8 +316,7 @@ def pointage():
                 p.check_out = check_out
                 p.break_start = break_start
                 p.break_end = break_end
-                p.heures = hours
-                p.montant = hours * ouvrier.taux_horaire
+                p.update_hours_and_amount()
                 p.user_id = user.id
 
         db.session.commit()
@@ -330,6 +329,72 @@ def pointage():
                            selected_chantier_id=selected_chantier_id,
                            selected_date=selected_date_str,
                            existing_pointages=existing_pointages)
+
+@main_oeuvre_bp.route('/pointage/action/<int:ouvrier_id>/<action>', methods=['POST'])
+@login_required
+def pointage_action(ouvrier_id, action):
+    user = get_current_user()
+    if not user.entreprise_id:
+        return jsonify({'success': False, 'message': 'Utilisateur sans entreprise'}), 403
+
+    ouvrier = Ouvrier.query.filter_by(id=ouvrier_id, entreprise_id=user.entreprise_id).first_or_404()
+
+    chantier_id = request.args.get('chantier_id', type=int) or ouvrier.chantier_id
+
+    if not chantier_id:
+        return jsonify({'success': False, 'message': 'Chantier non spécifié'}), 400
+
+    # Check access to chantier
+    if user.role not in ['admin', 'direction', 'super_admin']:
+         assignments = user.assignments.filter_by(actif=True).all()
+         allowed_ids = [a.chantier_id for a in assignments]
+         if chantier_id not in allowed_ids:
+             return jsonify({'success': False, 'message': 'Accès non autorisé à ce chantier'}), 403
+
+    # Get or Create Pointage for today
+    today = date.today()
+    pointage = Pointage.query.filter_by(
+        ouvrier_id=ouvrier.id,
+        date_pointage=today
+    ).first()
+
+    if not pointage:
+        pointage = Pointage(
+            ouvrier_id=ouvrier.id,
+            chantier_id=chantier_id,
+            user_id=user.id,
+            date_pointage=today,
+            valide=False
+        )
+        db.session.add(pointage)
+
+    now_time = datetime.now().time()
+    # Round to nearest minute for cleanliness? No, user said "temps exacts".
+
+    if action == 'arrivee':
+        pointage.check_in = now_time
+    elif action == 'pause':
+        pointage.break_start = now_time
+    elif action == 'reprise':
+        pointage.break_end = now_time
+    elif action == 'depart':
+        pointage.check_out = now_time
+    else:
+        return jsonify({'success': False, 'message': 'Action inconnue'}), 400
+
+    pointage.user_id = user.id # Update last modified user
+    pointage.update_hours_and_amount()
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'check_in': pointage.check_in.strftime('%H:%M') if pointage.check_in else None,
+        'check_out': pointage.check_out.strftime('%H:%M') if pointage.check_out else None,
+        'break_start': pointage.break_start.strftime('%H:%M') if pointage.break_start else None,
+        'break_end': pointage.break_end.strftime('%H:%M') if pointage.break_end else None,
+        'heures': f"{pointage.heures:.2f}",
+        'montant': f"{pointage.montant:.2f}"
+    })
 
 @main_oeuvre_bp.route('/export')
 @login_required

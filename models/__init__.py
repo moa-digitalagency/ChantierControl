@@ -212,3 +212,34 @@ class Pointage(db.Model):
     ouvrier = db.relationship('Ouvrier', back_populates='pointages')
     chantier = db.relationship('Chantier', backref=db.backref('pointages', lazy='dynamic'))
     saisi_par = db.relationship('User', foreign_keys=[user_id])
+
+    def update_hours_and_amount(self):
+        """Calculates hours and amount based on times."""
+        from datetime import datetime, date, timedelta
+
+        hours = 0.0
+        if self.check_in and self.check_out:
+            dt_in = datetime.combine(date.min, self.check_in)
+            dt_out = datetime.combine(date.min, self.check_out)
+
+            if dt_out < dt_in:
+                dt_out += timedelta(days=1)
+
+            duration = dt_out - dt_in
+
+            if self.break_start and self.break_end:
+                dt_break_start = datetime.combine(date.min, self.break_start)
+                dt_break_end = datetime.combine(date.min, self.break_end)
+                if dt_break_end < dt_break_start:
+                        dt_break_end += timedelta(days=1)
+
+                break_duration = dt_break_end - dt_break_start
+                duration -= break_duration
+
+            hours = duration.total_seconds() / 3600.0
+            if hours < 0: hours = 0
+
+        self.heures = hours
+        if self.ouvrier:
+            self.montant = hours * self.ouvrier.taux_horaire
+        return hours
