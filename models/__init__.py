@@ -165,3 +165,36 @@ class Alerte(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     chantier = db.relationship('Chantier')
+
+class Ouvrier(db.Model):
+    __tablename__ = 'ouvriers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    entreprise_id = db.Column(db.Integer, db.ForeignKey('entreprises.id'), nullable=False)
+    nom = db.Column(db.String(100), nullable=False)
+    prenom = db.Column(db.String(100), nullable=False)
+    telephone = db.Column(db.String(20))
+    poste = db.Column(db.String(100))
+    taux_horaire = db.Column(db.Float, default=0.0)
+    actif = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    entreprise = db.relationship('Entreprise', backref=db.backref('ouvriers', lazy='dynamic'))
+    pointages = db.relationship('Pointage', back_populates='ouvrier', lazy='dynamic')
+
+class Pointage(db.Model):
+    __tablename__ = 'pointages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    ouvrier_id = db.Column(db.Integer, db.ForeignKey('ouvriers.id'), nullable=False)
+    chantier_id = db.Column(db.Integer, db.ForeignKey('chantiers.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False) # Saisi par
+    date_pointage = db.Column(db.Date, nullable=False)
+    heures = db.Column(db.Float, default=0.0)
+    montant = db.Column(db.Float, default=0.0)
+    valide = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    ouvrier = db.relationship('Ouvrier', back_populates='pointages')
+    chantier = db.relationship('Chantier', backref=db.backref('pointages', lazy='dynamic'))
+    saisi_par = db.relationship('User', foreign_keys=[user_id])

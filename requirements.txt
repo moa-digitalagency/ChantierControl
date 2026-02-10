@@ -7,3 +7,8 @@ pillow==10.1.0
 gunicorn==21.2.0
 python-dotenv==1.0.0
 reportlab==4.0.9
+numpy==2.4.2
+openpyxl==3.1.5
+pandas==3.0.0
+python-dateutil==2.9.0.post0
+six==1.17.0

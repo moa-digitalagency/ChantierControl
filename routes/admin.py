@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from models import db, User, Chantier, ChantierAssignment, Entreprise
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, send_file
+from models import db, User, Chantier, ChantierAssignment, Entreprise, Ouvrier, Pointage, Achat, Heure, Avance
 from security import admin_required, get_current_user, hash_pin, get_manageable_roles
-from datetime import datetime
+from datetime import datetime, date
+import json
+import io
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -239,3 +241,74 @@ def parametres():
             return redirect(url_for('admin.parametres'))
 
     return render_template('admin/settings.html', entreprise=entreprise)
+
+@admin_bp.route('/sauvegarde', methods=['GET'])
+@admin_required
+def sauvegarde():
+    current_user = get_current_user()
+    if current_user.role == 'super_admin':
+        return redirect(url_for('superadmin.index'))
+
+    return render_template('admin/sauvegarde.html')
+
+@admin_bp.route('/sauvegarde/download')
+@admin_required
+def download_backup():
+    current_user = get_current_user()
+    ent_id = current_user.entreprise_id
+    if not ent_id:
+        flash("Erreur", "danger")
+        return redirect(url_for('admin.index'))
+
+    # Helper to serialize list of objects
+    def serialize(query):
+        res = []
+        for item in query:
+            d = {}
+            for col in item.__table__.columns:
+                val = getattr(item, col.name)
+                if isinstance(val, (datetime, date)):
+                    val = val.isoformat()
+                d[col.name] = val
+            res.append(d)
+        return res
+
+    data = {}
+    data['entreprise'] = serialize(Entreprise.query.filter_by(id=ent_id).all())
+    data['users'] = serialize(User.query.filter_by(entreprise_id=ent_id).all())
+    data['chantiers'] = serialize(Chantier.query.filter_by(entreprise_id=ent_id).all())
+    data['ouvriers'] = serialize(Ouvrier.query.filter_by(entreprise_id=ent_id).all())
+
+    # Related data
+    data['pointages'] = serialize(Pointage.query.join(Ouvrier).filter(Ouvrier.entreprise_id == ent_id).all())
+    data['achats'] = serialize(Achat.query.join(Chantier).filter(Chantier.entreprise_id == ent_id).all())
+    data['heures'] = serialize(Heure.query.join(Chantier).filter(Chantier.entreprise_id == ent_id).all())
+    data['avances'] = serialize(Avance.query.join(Chantier).filter(Chantier.entreprise_id == ent_id).all())
+    data['assignments'] = serialize(ChantierAssignment.query.join(Chantier).filter(Chantier.entreprise_id == ent_id).all())
+
+    json_str = json.dumps(data, indent=2, ensure_ascii=False)
+
+    output = io.BytesIO(json_str.encode('utf-8'))
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return send_file(
+        output,
+        download_name=f"backup_{current_user.entreprise.nom}_{timestamp}.json",
+        as_attachment=True,
+        mimetype='application/json'
+    )
+
+@admin_bp.route('/sauvegarde/restore', methods=['POST'])
+@admin_required
+def restore_backup():
+    if 'file' not in request.files:
+        flash('Aucun fichier sélectionné', 'danger')
+        return redirect(url_for('admin.sauvegarde'))
+
+    file = request.files['file']
+    if not file.filename.endswith('.json'):
+        flash('Format invalide. JSON requis.', 'danger')
+        return redirect(url_for('admin.sauvegarde'))
+
+    # Placeholder for restore logic
+    flash("La restauration automatique est désactivée pour des raisons de sécurité. Veuillez contacter le support technique.", "warning")
+    return redirect(url_for('admin.sauvegarde'))

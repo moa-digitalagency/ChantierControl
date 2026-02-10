@@ -25,6 +25,7 @@ def create_app():
     from routes.finance import finance_bp
     from routes.superadmin import superadmin_bp
     from routes.admin import admin_bp
+    from routes.main_oeuvre import main_oeuvre_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -35,6 +36,7 @@ def create_app():
     app.register_blueprint(finance_bp)
     app.register_blueprint(superadmin_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(main_oeuvre_bp)
     
     @app.route('/')
     def index():
