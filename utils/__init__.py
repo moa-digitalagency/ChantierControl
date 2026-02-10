@@ -59,9 +59,9 @@ def format_currency(value):
 
     formatted_value = f"{value:,.2f}".replace(',', ' ')
 
-    # If the value is large (>= 100,000), break the currency to the next line
+    # If the value is large (>= 100,000), reduce font size and break the currency to the next line
     if value >= 100000:
-        return Markup(f"{formatted_value}<br><span class='text-sm text-gray-500'>MAD</span>")
+        return Markup(f"<span class='text-lg tracking-tight font-bold'>{formatted_value}</span><br><span class='text-xs text-gray-500 font-normal'>MAD</span>")
 
     return Markup(f"{formatted_value} MAD")
 
