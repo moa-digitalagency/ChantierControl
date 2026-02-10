@@ -22,6 +22,7 @@ def create_app():
     from routes.saisies import saisies_bp
     from routes.validation import validation_bp
     from routes.users import users_bp
+    from routes.finance import finance_bp
     from routes.superadmin import superadmin_bp
     from routes.admin import admin_bp
     
@@ -31,6 +32,7 @@ def create_app():
     app.register_blueprint(saisies_bp)
     app.register_blueprint(validation_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(finance_bp)
     app.register_blueprint(superadmin_bp)
     app.register_blueprint(admin_bp)
     
