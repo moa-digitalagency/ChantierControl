@@ -79,6 +79,39 @@ def init_database():
                     conn.execute(text("ALTER TABLE heures ADD COLUMN remarque_modification TEXT"))
                     conn.commit()
 
+            # Check ouvriers table
+            try:
+                columns = [c['name'] for c in inspector.get_columns('ouvriers')]
+                if 'chantier_id' not in columns:
+                    print("Migration: Ajout de chantier_id à la table ouvriers")
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN chantier_id INTEGER REFERENCES chantiers(id)"))
+                        conn.commit()
+            except Exception as e:
+                # Table might not exist yet if fresh install, which is fine
+                pass
+
+            # Check ouvriers table for CNI and Extra Info
+            try:
+                columns = [c['name'] for c in inspector.get_columns('ouvriers')]
+                if 'cni' not in columns:
+                    print("Migration: Ajout de cni et photo_cni à la table ouvriers")
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN cni VARCHAR(100)"))
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN photo_cni VARCHAR(500)"))
+                        conn.commit()
+
+                if 'adresse' not in columns:
+                    print("Migration: Ajout adresse, ville, nationalite, photo_profil")
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN adresse VARCHAR(500)"))
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN ville VARCHAR(100)"))
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN nationalite VARCHAR(100)"))
+                        conn.execute(text("ALTER TABLE ouvriers ADD COLUMN photo_profil VARCHAR(500)"))
+                        conn.commit()
+            except Exception as e:
+                pass
+
         except Exception as e:
             print(f"Erreur lors de l'initialisation de la base: {e}")
             # Continue execution to allow super admin check

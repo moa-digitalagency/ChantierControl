@@ -84,15 +84,14 @@
                         <th class="px-6 py-3 font-medium text-right">Total Dépensé</th>
                         <th class="px-6 py-3 font-medium text-right">Reste</th>
                         <th class="px-6 py-3 font-medium text-center">% Conso.</th>
+                        <th class="px-6 py-3 font-medium text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     {% for row in data %}
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 font-medium text-gray-900">
-                            <a href="{{ url_for('chantiers.detail', id=row.chantier.id) }}" class="hover:text-primary-600">
-                                {{ row.chantier.nom }}
-                            </a>
+                            {{ row.chantier.nom }}
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">{{ format_currency(row.budget) }}</td>
                         <td class="px-6 py-4 text-right text-gray-600 whitespace-nowrap">{{ format_currency(row.depenses) }}</td>
@@ -111,6 +110,11 @@
                                          style="width: {{ [row.consommation_pct, 100]|min }}%"></div>
                                 </div>
                             </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{{ url_for('finance.details', chantier_id=row.chantier.id) }}" class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors">
+                                <i class="fas fa-eye mr-2"></i> Détails
+                            </a>
                         </td>
                     </tr>
                     {% else %}
