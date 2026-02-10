@@ -1,52 +1,89 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block page_title %}Sauvegarde & Restauration{% endblock %}
-{% block page_subtitle %}Sécurisation des données de l'entreprise{% endblock %}
+{% block title %}Sauvegardes{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <i class="fas fa-download text-primary-600"></i> Sauvegarder les données
-        </h3>
-        <p class="text-gray-600 mb-6">
-            Cette action génère un fichier de sauvegarde complet (format JSON) contenant toutes les données de votre entreprise (chantiers, utilisateurs, finances, main d'œuvre).
-            Il est recommandé d'effectuer cette opération régulièrement.
-        </p>
-        <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 text-sm text-blue-800">
-            <i class="fas fa-info-circle mr-2"></i> Le fichier téléchargé contiendra des informations sensibles. Conservez-le en lieu sûr.
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Sauvegardes</h1>
+            <p class="text-gray-500 text-sm mt-1">Sécurisez vos données en créant des copies de sauvegarde régulières.</p>
         </div>
-        <a href="{{ url_for('admin.download_backup') }}" class="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm">
-            <i class="fas fa-download mr-2"></i> Télécharger la sauvegarde
-        </a>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <i class="fas fa-upload text-red-600"></i> Restaurer une sauvegarde
-        </h3>
-        <p class="text-gray-600 mb-6">
-            Vous pouvez restaurer les données à partir d'un fichier de sauvegarde précédemment téléchargé.
-        </p>
-        <div class="bg-red-50 border border-red-100 rounded-lg p-4 mb-6 text-sm text-red-800">
-            <i class="fas fa-exclamation-triangle mr-2"></i> Attention : La restauration est une opération critique. Veuillez contacter le support technique pour procéder à une restauration complète.
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Create Backup Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-6">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4">
+                    <i class="fas fa-cloud-download-alt text-2xl"></i>
+                </div>
+                <h2 class="text-lg font-bold text-gray-900 mb-2">Exporter les données</h2>
+                <p class="text-gray-500 text-sm mb-6">
+                    Générez une sauvegarde complète de votre entreprise (Chantiers, Utilisateurs, Ouvriers, Pointages, Finances) au format JSON.
+                </p>
+
+                <a href="{{ url_for('admin.download_backup') }}" class="block w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white text-center font-medium rounded-lg shadow-sm transition-colors">
+                    <i class="fas fa-download mr-2"></i> Télécharger la sauvegarde
+                </a>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                <p class="text-xs text-gray-500 flex items-center">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                    Dernière sauvegarde: <span class="font-medium text-gray-700 ml-1">Non disponible</span>
+                </p>
+            </div>
         </div>
 
-        <form action="{{ url_for('admin.restore_backup') }}" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-4 sm:items-end">
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Fichier de sauvegarde (.json)</label>
-                <input type="file" name="file" accept=".json" class="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-full file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-gray-100 file:text-gray-700
-                    hover:file:bg-gray-200
-                ">
+        <!-- Restore Backup Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-6">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-4">
+                    <i class="fas fa-cloud-upload-alt text-2xl"></i>
+                </div>
+                <h2 class="text-lg font-bold text-gray-900 mb-2">Restaurer les données</h2>
+                <p class="text-gray-500 text-sm mb-6">
+                    Importez un fichier de sauvegarde (.json) pour restaurer vos données.
+                    <span class="text-red-500 block mt-1"><i class="fas fa-exclamation-triangle mr-1"></i> Attention: Cette action est irréversible.</span>
+                </p>
+
+                <form action="{{ url_for('admin.restore_backup') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    <div class="relative group">
+                        <input type="file" name="file" id="file" accept=".json" class="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2.5 file:px-4
+                            file:rounded-lg file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-purple-50 file:text-purple-700
+                            hover:file:bg-purple-100
+                            cursor-pointer border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500
+                        " required>
+                    </div>
+                    <button type="submit" class="w-full py-3 px-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-medium rounded-lg shadow-sm transition-colors" onclick="return confirm('Êtes-vous sûr de vouloir restaurer ces données ? Cela remplacera les données actuelles.')">
+                        <i class="fas fa-history mr-2"></i> Restaurer la sauvegarde
+                    </button>
+                </form>
             </div>
-            <button type="submit" class="px-6 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-medium shadow-sm">
-                Restaurer
-            </button>
-        </form>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                <p class="text-xs text-gray-500 flex items-center">
+                    <i class="fas fa-shield-alt mr-2 text-green-500"></i>
+                    Restauration sécurisée et cryptée.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- History (Static for now, but good for UI) -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 class="font-bold text-gray-900">Historique des actions</h3>
+        </div>
+        <div class="p-6 text-center text-gray-500 text-sm">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                <i class="fas fa-history text-gray-400"></i>
+            </div>
+            <p>L'historique des sauvegardes sera disponible prochainement.</p>
+        </div>
     </div>
 </div>
 {% endblock %}
