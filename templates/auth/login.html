@@ -9,40 +9,11 @@
     <title>Connexion - Gestion Chantiers</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="{{ url_for('static', filename='js/auth-config.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f5f3ff',
-                            100: '#ede9fe',
-                            200: '#ddd6fe',
-                            300: '#c4b5fd',
-                            400: '#a78bfa',
-                            500: '#8b5cf6',
-                            600: '#7c3aed',
-                            700: '#6d28d9',
-                            800: '#5b21b6',
-                            900: '#4c1d95',
-                        }
-                    }
-                }
-            }
-        }
+        window.swUrl = "{{ url_for('static', filename='sw.js') }}";
     </script>
-    <style>
-        .login-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-        }
-        .input-focus:focus {
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-        }
-    </style>
 </head>
 <body class="login-bg min-h-screen flex items-center justify-center p-4 relative">
     <!-- Language Switcher -->
@@ -106,16 +77,6 @@
                     {{ t('login_btn') }}
                 </button>
             </form>
-            <script>
-                document.getElementById('loginForm').addEventListener('submit', function(e) {
-                    const btn = this.querySelector('button[type="submit"]');
-                    if (btn.disabled) { e.preventDefault(); return; }
-                    btn.disabled = true;
-                    btn.classList.add('opacity-75', 'cursor-not-allowed');
-                    const icon = btn.querySelector('i');
-                    if (icon) icon.className = 'fas fa-circle-notch fa-spin';
-                });
-            </script>
             
             <div class="mt-8 pt-6 border-t border-gray-100">
                 <p class="text-center text-sm text-gray-500">
@@ -129,19 +90,6 @@
             {{ t('login_footer') }}
         </p>
     </div>
-    <script>
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
-    </script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 </body>
 </html>
