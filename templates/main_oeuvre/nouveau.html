@@ -54,13 +54,6 @@
                 </select>
             </div>
         </div>
-            <select name="chantier_id" id="chantier_id" class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 transition-colors shadow-sm">
-                <option value="">-- Aucun (Non assigné) --</option>
-                {% for c in chantiers %}
-                <option value="{{ c.id }}">{{ c.nom }}</option>
-                {% endfor %}
-            </select>
-        </div>
 
         <div>
             <label for="poste" class="block text-sm font-medium text-gray-700 mb-2">Poste / Fonction</label>

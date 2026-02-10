@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, flash, redirect, url_for
+from flask import Blueprint, render_template, flash, redirect, url_for, request
 from security import direction_required, get_current_user
 from models import Chantier, Achat, Heure, Avance, Pointage, db
 from sqlalchemy import func
 from utils.export import export_to_excel
+from utils import get_date_range
 from datetime import date
 
 finance_bp = Blueprint('finance', __name__, url_prefix='/finance')
@@ -11,6 +12,12 @@ finance_bp = Blueprint('finance', __name__, url_prefix='/finance')
 @direction_required
 def index():
     current_user = get_current_user()
+
+    filter_type = request.args.get('filter', 'year')
+    custom_start = request.args.get('start')
+    custom_end = request.args.get('end')
+
+    start_date, end_date = get_date_range(filter_type, custom_start, custom_end)
 
     # Fetch all chantiers for the enterprise
     chantiers = Chantier.query.filter_by(entreprise_id=current_user.entreprise_id).all()
@@ -26,18 +33,21 @@ def index():
     for chantier in chantiers:
         # Calculate totals per chantier
 
-        # Achats (Expenses) - optimize with scalar query if needed, but keeping consistent style for now
-        # Using db.session.query for performance
-        depenses = db.session.query(func.sum(Achat.montant)).filter_by(chantier_id=chantier.id).scalar() or 0
+        # Achats (Expenses)
+        depenses = db.session.query(func.sum(Achat.montant)).filter_by(chantier_id=chantier.id)\
+            .filter(Achat.date_achat >= start_date, Achat.date_achat < end_date).scalar() or 0
 
         # Heures (Legacy Labor Cost)
-        cout_heures = db.session.query(func.sum(Heure.cout_total)).filter_by(chantier_id=chantier.id).scalar() or 0
+        cout_heures = db.session.query(func.sum(Heure.cout_total)).filter_by(chantier_id=chantier.id)\
+            .filter(Heure.date_travail >= start_date, Heure.date_travail < end_date).scalar() or 0
 
         # Pointages (New Labor Cost)
-        cout_pointages = db.session.query(func.sum(Pointage.montant)).filter_by(chantier_id=chantier.id).scalar() or 0
+        cout_pointages = db.session.query(func.sum(Pointage.montant)).filter_by(chantier_id=chantier.id)\
+            .filter(Pointage.date_pointage >= start_date, Pointage.date_pointage < end_date).scalar() or 0
 
         # Avances (Advances)
-        avances = db.session.query(func.sum(Avance.montant)).filter_by(chantier_id=chantier.id).scalar() or 0
+        avances = db.session.query(func.sum(Avance.montant)).filter_by(chantier_id=chantier.id)\
+            .filter(Avance.date_avance >= start_date, Avance.date_avance < end_date).scalar() or 0
 
         budget = chantier.budget_previsionnel or 0
 
@@ -69,7 +79,8 @@ def index():
         'reste': total_budget - (total_depenses + total_heures)
     }
 
-    return render_template('finance/index.html', data=financial_data, global_stats=global_stats)
+    return render_template('finance/index.html', data=financial_data, global_stats=global_stats,
+                           filter_type=filter_type, custom_start=custom_start, custom_end=custom_end)
 
 @finance_bp.route('/details/<int:chantier_id>')
 @direction_required

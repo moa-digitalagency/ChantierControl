@@ -198,6 +198,10 @@ class Pointage(db.Model):
     chantier_id = db.Column(db.Integer, db.ForeignKey('chantiers.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False) # Saisi par
     date_pointage = db.Column(db.Date, nullable=False)
+    check_in = db.Column(db.Time, nullable=True)
+    check_out = db.Column(db.Time, nullable=True)
+    break_start = db.Column(db.Time, nullable=True)
+    break_end = db.Column(db.Time, nullable=True)
     heures = db.Column(db.Float, default=0.0)
     montant = db.Column(db.Float, default=0.0)
     valide = db.Column(db.Boolean, default=False)

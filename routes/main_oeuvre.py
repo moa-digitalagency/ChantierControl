@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from models import db, Ouvrier, Pointage, Chantier, User
 from security import login_required, get_current_user, direction_required
-from datetime import datetime, date
+from datetime import datetime, date, timedelta, time
 from utils.export import export_to_excel
-from utils import save_photo
+from utils import save_photo, get_date_range
 import pandas as pd
 
 main_oeuvre_bp = Blueprint('main_oeuvre', __name__, url_prefix='/main_oeuvre')
@@ -259,43 +259,66 @@ def pointage():
             flash("Veuillez sélectionner un chantier", "warning")
             return redirect(url_for('main_oeuvre.pointage'))
 
-        # Process form data
-        # Form data format: hours_{ouvrier_id}
-        for ouvrier in ouvriers:
-            hours_str = request.form.get(f'hours_{ouvrier.id}')
+        def parse_time(t_str):
+            if not t_str: return None
             try:
-                hours = float(hours_str) if hours_str else 0.0
+                return datetime.strptime(t_str, '%H:%M').time()
             except ValueError:
-                hours = 0.0
+                return None
 
-            if hours > 0:
-                # Calculate amount
-                montant = hours * ouvrier.taux_horaire
+        for ouvrier in ouvriers:
+            check_in_str = request.form.get(f'check_in_{ouvrier.id}')
+            check_out_str = request.form.get(f'check_out_{ouvrier.id}')
+            break_start_str = request.form.get(f'break_start_{ouvrier.id}')
+            break_end_str = request.form.get(f'break_end_{ouvrier.id}')
 
-                # Update or Create
+            check_in = parse_time(check_in_str)
+            check_out = parse_time(check_out_str)
+            break_start = parse_time(break_start_str)
+            break_end = parse_time(break_end_str)
+
+            hours = 0.0
+            if check_in and check_out:
+                dt_in = datetime.combine(date.min, check_in)
+                dt_out = datetime.combine(date.min, check_out)
+
+                if dt_out < dt_in:
+                    dt_out += timedelta(days=1)
+
+                duration = dt_out - dt_in
+
+                if break_start and break_end:
+                    dt_break_start = datetime.combine(date.min, break_start)
+                    dt_break_end = datetime.combine(date.min, break_end)
+                    if dt_break_end < dt_break_start:
+                         dt_break_end += timedelta(days=1)
+
+                    break_duration = dt_break_end - dt_break_start
+                    duration -= break_duration
+
+                hours = duration.total_seconds() / 3600.0
+                if hours < 0: hours = 0
+
+            # Only create/update if there is data or existing pointage
+            if hours > 0 or existing_pointages.get(ouvrier.id):
                 p = existing_pointages.get(ouvrier.id)
-                if p:
-                    p.heures = hours
-                    p.montant = montant
-                    p.user_id = user.id # Update who modified it
-                else:
+                if not p:
                     p = Pointage(
                         ouvrier_id=ouvrier.id,
                         chantier_id=selected_chantier_id,
                         user_id=user.id,
                         date_pointage=selected_date,
-                        heures=hours,
-                        montant=montant,
                         valide=False
                     )
                     db.session.add(p)
-            else:
-                # If hours 0 and pointage exists, maybe delete or set to 0?
-                # Let's set to 0
-                p = existing_pointages.get(ouvrier.id)
-                if p:
-                    p.heures = 0
-                    p.montant = 0
+
+                p.check_in = check_in
+                p.check_out = check_out
+                p.break_start = break_start
+                p.break_end = break_end
+                p.heures = hours
+                p.montant = hours * ouvrier.taux_horaire
+                p.user_id = user.id
 
         db.session.commit()
         flash("Pointage enregistré", "success")
@@ -395,21 +418,12 @@ def salaires():
 
     # Filter params
     chantier_id = request.args.get('chantier_id', type=int)
-    month = request.args.get('month', date.today().strftime('%Y-%m'))
 
-    try:
-        start_date = datetime.strptime(month, '%Y-%m').date()
-        # End date is start of next month - 1 day
-        if start_date.month == 12:
-            end_date = date(start_date.year + 1, 1, 1)
-        else:
-            end_date = date(start_date.year, start_date.month + 1, 1)
-    except ValueError:
-        start_date = date.today().replace(day=1)
-        if start_date.month == 12:
-            end_date = date(start_date.year + 1, 1, 1)
-        else:
-            end_date = date(start_date.year, start_date.month + 1, 1)
+    filter_type = request.args.get('filter', 'month')
+    custom_start = request.args.get('start')
+    custom_end = request.args.get('end')
+
+    start_date, end_date = get_date_range(filter_type, custom_start, custom_end)
 
     # Chantiers list
     if user.role in ['admin', 'direction']:
@@ -455,4 +469,87 @@ def salaires():
                            salary_data=salary_data,
                            chantiers=chantiers,
                            selected_chantier_id=chantier_id,
-                           selected_month=month)
+                           filter_type=filter_type,
+                           custom_start=custom_start,
+                           custom_end=custom_end)
+
+@main_oeuvre_bp.route('/details/<int:id>', methods=['GET'])
+@login_required
+def details(id):
+    user = get_current_user()
+    ouvrier = Ouvrier.query.filter_by(id=id, entreprise_id=user.entreprise_id).first_or_404()
+
+    # Check access
+    if user.role not in ['admin', 'direction', 'super_admin']:
+         assignments = user.assignments.filter_by(actif=True).all()
+         allowed_ids = [a.chantier_id for a in assignments]
+         if not ouvrier.chantier_id or ouvrier.chantier_id not in allowed_ids:
+             flash("Accès non autorisé", "danger")
+             return redirect(url_for('main_oeuvre.index'))
+
+    # Filter pointages history
+    filter_type = request.args.get('filter', 'month')
+    custom_start = request.args.get('start')
+    custom_end = request.args.get('end')
+
+    start_date, end_date = get_date_range(filter_type, custom_start, custom_end)
+
+    pointages = ouvrier.pointages.filter(Pointage.date_pointage >= start_date, Pointage.date_pointage < end_date).order_by(Pointage.date_pointage.desc()).all()
+
+    total_heures = sum(p.heures for p in pointages)
+    total_montant = sum(p.montant for p in pointages)
+
+    return render_template('main_oeuvre/details.html', ouvrier=ouvrier, pointages=pointages,
+                           total_heures=total_heures, total_montant=total_montant,
+                           filter_type=filter_type, custom_start=custom_start, custom_end=custom_end)
+
+@main_oeuvre_bp.route('/export_fiche/<int:id>')
+@login_required
+def export_fiche(id):
+    user = get_current_user()
+    ouvrier = Ouvrier.query.filter_by(id=id, entreprise_id=user.entreprise_id).first_or_404()
+
+    # Filter pointages history
+    filter_type = request.args.get('filter', 'month')
+    custom_start = request.args.get('start')
+    custom_end = request.args.get('end')
+
+    start_date, end_date = get_date_range(filter_type, custom_start, custom_end)
+
+    pointages = ouvrier.pointages.filter(Pointage.date_pointage >= start_date, Pointage.date_pointage < end_date).order_by(Pointage.date_pointage.asc()).all()
+
+    total_heures = sum(p.heures for p in pointages)
+    total_montant = sum(p.montant for p in pointages)
+
+    data = []
+    # Identity Info Header
+    data.append({'Date': 'INFORMATIONS', 'Arrivée': '', 'Départ': '', 'Heures': '', 'Montant': ''})
+    data.append({'Date': 'Nom Complet', 'Arrivée': f"{ouvrier.nom} {ouvrier.prenom}", 'Départ': '', 'Heures': '', 'Montant': ''})
+    data.append({'Date': 'Poste', 'Arrivée': f"{ouvrier.poste or ''}", 'Départ': '', 'Heures': '', 'Montant': ''})
+    data.append({'Date': 'Taux Horaire', 'Arrivée': f"{ouvrier.taux_horaire} MAD", 'Départ': '', 'Heures': '', 'Montant': ''})
+    data.append({'Date': '', 'Arrivée': '', 'Départ': '', 'Heures': '', 'Montant': ''}) # Spacer
+
+    # Table Header logic handled by export function (keys of first dict), so we need consistent keys
+    # But keys must be same.
+
+    for p in pointages:
+        data.append({
+            'Date': str(p.date_pointage),
+            'Arrivée': p.check_in.strftime('%H:%M') if p.check_in else '',
+            'Départ': p.check_out.strftime('%H:%M') if p.check_out else '',
+            'Heures': f"{p.heures:.2f}",
+            'Montant': f"{p.montant:.2f}"
+        })
+
+    # Add Total Row
+    data.append({
+        'Date': 'TOTAL',
+        'Arrivée': '',
+        'Départ': '',
+        'Heures': f"{total_heures:.2f}",
+        'Montant': f"{total_montant:.2f}"
+    })
+
+    from utils.export import export_to_pdf
+    filename = f"Fiche_{ouvrier.nom}_{ouvrier.prenom}_{date.today()}.pdf"
+    return export_to_pdf(data, filename)
