@@ -55,15 +55,12 @@ def save_photo(file, upload_folder='static/uploads'):
 
 def format_currency(value):
     if value is None:
-        return Markup("0 MAD")
+        return Markup("0.00 MAD")
 
     formatted_value = f"{value:,.2f}".replace(',', ' ')
 
-    # If the value is large (>= 100,000), reduce font size and break the currency to the next line
-    if value >= 100000:
-        return Markup(f"<span class='text-lg tracking-tight font-bold'>{formatted_value}</span><br><span class='text-xs text-gray-500 font-normal'>MAD</span>")
-
-    return Markup(f"{formatted_value} MAD")
+    # Return single line string with non-breaking space
+    return Markup(f"{formatted_value}&nbsp;MAD")
 
 def format_percentage(value):
     if value is None:
