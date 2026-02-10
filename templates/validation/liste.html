@@ -4,248 +4,318 @@
 
 {% block content %}
 <div class="space-y-6">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-800">Validations en attente</h1>
-        <p class="text-gray-500">{{ achats|length + avances|length + heures|length }} saisies à valider</p>
-    </div>
-    
-    {% if achats %}
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-blue-50">
-            <h2 class="text-lg font-semibold text-blue-800">
-                <i class="fas fa-shopping-cart mr-2"></i> Achats ({{ achats|length }})
-            </h2>
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Validations</h1>
+            <p class="text-gray-500 text-sm mt-1">Gérez les demandes en attente de validation.</p>
         </div>
-        <div class="divide-y divide-gray-200">
-            {% for achat in achats %}
-            <div class="p-6">
-                <div class="flex flex-col md:flex-row gap-4">
-                    {% if achat.photo_justificatif %}
-                    <img src="{{ url_for('static', filename='uploads/' + achat.photo_justificatif) }}" 
-                         alt="Justificatif" class="w-24 h-24 object-cover rounded-lg cursor-pointer"
-                         onclick="window.open(this.src)">
-                    {% else %}
-                    <div class="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-image text-gray-400 text-2xl"></i>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="flex-1">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-                            <div>
-                                <span class="font-semibold text-lg">{{ format_currency(achat.montant) }}</span>
-                                <span class="text-gray-500 mx-2">-</span>
-                                <span class="text-gray-700">{{ achat.fournisseur }}</span>
-                            </div>
-                            <span class="text-sm text-gray-500">{{ achat.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-1">
-                            <i class="fas fa-building mr-1"></i> {{ achat.chantier.nom }}
-                        </p>
-                        <p class="text-sm text-gray-600 mb-1">
-                            <i class="fas fa-user mr-1"></i> {{ achat.saisi_par.prenom }} {{ achat.saisi_par.nom }}
-                        </p>
-                        {% if achat.description %}
-                        <p class="text-sm text-gray-500">{{ achat.description }}</p>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="flex md:flex-col gap-2">
-                        <form method="POST" action="{{ url_for('validation.valider_achat', id=achat.id, action='valider') }}" class="flex-1">
-                            <input type="hidden" name="commentaire" value="">
-                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                                <i class="fas fa-check mr-1"></i> Valider
-                            </button>
-                        </form>
-                        <button type="button" onclick="showRefuseModal('achat', {{ achat.id }})" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                            <i class="fas fa-times mr-1"></i> Refuser
-                        </button>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-2 md:mt-0 md:flex-col md:justify-center md:items-center md:border-l md:pl-4 md:ml-4 border-gray-100">
-                         <a href="{{ url_for('saisies.modifier_saisie', type_saisie='achat', id=achat.id) }}" class="text-gray-400 hover:text-blue-600 transition-colors" title="Modifier">
-                            <i class="fas fa-edit fa-lg"></i>
-                        </a>
-                        <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='achat', id=achat.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette saisie ?');" class="inline">
-                            <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
-                                <i class="fas fa-trash fa-lg"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+        <div class="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+            <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+            {{ achats|length + avances|length + heures|length }} demandes en attente
         </div>
     </div>
-    {% endif %}
-    
-    {% if avances %}
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-green-50">
-            <h2 class="text-lg font-semibold text-green-800">
-                <i class="fas fa-money-bill-wave mr-2"></i> Avances ({{ avances|length }})
-            </h2>
-        </div>
-        <div class="divide-y divide-gray-200">
-            {% for avance in avances %}
-            <div class="p-6">
-                <div class="flex flex-col md:flex-row gap-4">
-                    {% if avance.photo_justificatif %}
-                    <img src="{{ url_for('static', filename='uploads/' + avance.photo_justificatif) }}" 
-                         alt="Justificatif" class="w-24 h-24 object-cover rounded-lg cursor-pointer"
-                         onclick="window.open(this.src)">
-                    {% else %}
-                    <div class="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-image text-gray-400 text-2xl"></i>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="flex-1">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-                            <span class="font-semibold text-lg">{{ format_currency(avance.montant) }}</span>
-                            <span class="text-sm text-gray-500">{{ avance.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-1">
-                            <i class="fas fa-building mr-1"></i> {{ avance.chantier.nom }}
-                        </p>
-                        <p class="text-sm text-gray-600 mb-1">
-                            <i class="fas fa-user mr-1"></i> {{ avance.beneficiaire.prenom }} {{ avance.beneficiaire.nom }}
-                        </p>
-                        {% if avance.description %}
-                        <p class="text-sm text-gray-500">{{ avance.description }}</p>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="flex md:flex-col gap-2">
-                        <form method="POST" action="{{ url_for('validation.valider_avance', id=avance.id, action='valider') }}" class="flex-1">
-                            <input type="hidden" name="commentaire" value="">
-                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                                <i class="fas fa-check mr-1"></i> Valider
-                            </button>
-                        </form>
-                        <button type="button" onclick="showRefuseModal('avance', {{ avance.id }})" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                            <i class="fas fa-times mr-1"></i> Refuser
-                        </button>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-2 md:mt-0 md:flex-col md:justify-center md:items-center md:border-l md:pl-4 md:ml-4 border-gray-100">
-                         <a href="{{ url_for('saisies.modifier_saisie', type_saisie='avance', id=avance.id) }}" class="text-gray-400 hover:text-blue-600 transition-colors" title="Modifier">
-                            <i class="fas fa-edit fa-lg"></i>
-                        </a>
-                        <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='avance', id=avance.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette saisie ?');" class="inline">
-                            <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
-                                <i class="fas fa-trash fa-lg"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    
-    {% if heures %}
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-purple-50">
-            <h2 class="text-lg font-semibold text-purple-800">
-                <i class="fas fa-clock mr-2"></i> Heures ({{ heures|length }})
-            </h2>
-        </div>
-        <div class="divide-y divide-gray-200">
-            {% for heure in heures %}
-            <div class="p-6">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="w-24 h-24 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <div class="text-center">
-                            <span class="text-2xl font-bold text-purple-600">{{ heure.quantite }}</span>
-                            <span class="block text-xs text-purple-500">heures</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex-1">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-                            <span class="font-semibold text-lg">{{ format_currency(heure.cout_total) }}</span>
-                            <span class="text-sm text-gray-500">{{ heure.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-1">
-                            <i class="fas fa-building mr-1"></i> {{ heure.chantier.nom }}
-                        </p>
-                        <p class="text-sm text-gray-600 mb-1">
-                            <i class="fas fa-user mr-1"></i> {{ heure.saisi_par.prenom }} {{ heure.saisi_par.nom }}
-                        </p>
-                        <p class="text-sm text-gray-500">
-                            {{ heure.type_travail|replace('_', ' ')|title }} - {{ heure.tarif_unitaire }} MAD/h
-                        </p>
-                        {% if heure.description %}
-                        <p class="text-sm text-gray-500">{{ heure.description }}</p>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="flex md:flex-col gap-2">
-                        <form method="POST" action="{{ url_for('validation.valider_heure', id=heure.id, action='valider') }}" class="flex-1">
-                            <input type="hidden" name="commentaire" value="">
-                            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                                <i class="fas fa-check mr-1"></i> Valider
-                            </button>
-                        </form>
-                        <button type="button" onclick="showRefuseModal('heure', {{ heure.id }})" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                            <i class="fas fa-times mr-1"></i> Refuser
-                        </button>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-2 md:mt-0 md:flex-col md:justify-center md:items-center md:border-l md:pl-4 md:ml-4 border-gray-100">
-                         <a href="{{ url_for('saisies.modifier_saisie', type_saisie='heure', id=heure.id) }}" class="text-gray-400 hover:text-blue-600 transition-colors" title="Modifier">
-                            <i class="fas fa-edit fa-lg"></i>
-                        </a>
-                        <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='heure', id=heure.id) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette saisie ?');" class="inline">
-                            <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors" title="Supprimer">
-                                <i class="fas fa-trash fa-lg"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-    
+
     {% if not achats and not avances and not heures %}
-    <div class="bg-white rounded-xl shadow p-8 text-center">
-        <i class="fas fa-check-circle text-green-500 text-5xl mb-4"></i>
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Tout est validé!</h2>
-        <p class="text-gray-500">Aucune saisie en attente de validation</p>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+            <i class="fas fa-check text-green-600 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900">Tout est à jour</h3>
+        <p class="mt-1 text-gray-500">Aucune demande en attente de validation pour le moment.</p>
+    </div>
+    {% endif %}
+    
+    <!-- Achats Section -->
+    {% if achats %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+            <div class="p-1.5 bg-blue-100 text-blue-600 rounded-lg">
+                <i class="fas fa-shopping-cart text-sm"></i>
+            </div>
+            <h2 class="font-bold text-gray-900">Achats</h2>
+            <span class="ml-auto bg-gray-200 text-gray-700 py-0.5 px-2.5 rounded-full text-xs font-bold">{{ achats|length }}</span>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for achat in achats %}
+            <div class="p-6 hover:bg-gray-50 transition-colors group">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Image / Icon -->
+                    <div class="flex-shrink-0">
+                        {% if achat.photo_justificatif %}
+                        <div class="relative group/img cursor-pointer" onclick="window.open('{{ url_for('static', filename='uploads/' + achat.photo_justificatif) }}')">
+                            <img src="{{ url_for('static', filename='uploads/' + achat.photo_justificatif) }}"
+                                 alt="Justificatif" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm">
+                            <div class="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors rounded-lg flex items-center justify-center">
+                                <i class="fas fa-expand text-white opacity-0 group-hover/img:opacity-100 transition-opacity"></i>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="w-20 h-20 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400">
+                            <i class="fas fa-file-invoice text-2xl"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <h3 class="text-lg font-bold text-gray-900 truncate">{{ achat.fournisseur }}</h3>
+                            <span class="text-xl font-bold text-gray-900">{{ format_currency(achat.montant) }}</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-building text-gray-400 w-4"></i>
+                                <span class="truncate">{{ achat.chantier.nom }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-user text-gray-400 w-4"></i>
+                                <span>{{ achat.saisi_par.prenom }} {{ achat.saisi_par.nom }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="far fa-calendar text-gray-400 w-4"></i>
+                                <span>{{ achat.created_at.strftime('%d/%m/%Y à %H:%M') }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-tag text-gray-400 w-4"></i>
+                                <span class="capitalize">{{ achat.categorie }}</span>
+                            </div>
+                        </div>
+
+                        {% if achat.description %}
+                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
+                            {{ achat.description }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Actions Mobile/Desktop -->
+                        <div class="flex flex-wrap gap-3 mt-4">
+                            <form method="POST" action="{{ url_for('validation.valider_achat', id=achat.id, action='valider') }}" class="flex-1 sm:flex-none">
+                                <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                                    <i class="fas fa-check"></i> Valider
+                                </button>
+                            </form>
+                            <button type="button" onclick="openRefuseModal('achat', {{ achat.id }})" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-times"></i> Refuser
+                            </button>
+                            <div class="flex-1 sm:flex-none flex justify-end gap-2 sm:ml-auto">
+                                <a href="{{ url_for('saisies.modifier_saisie', type_saisie='achat', id=achat.id) }}" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Modifier">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='achat', id=achat.id) }}" onsubmit="return confirm('Supprimer définitivement ?');" class="inline-block">
+                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Avances Section -->
+    {% if avances %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+            <div class="p-1.5 bg-green-100 text-green-600 rounded-lg">
+                <i class="fas fa-hand-holding-usd text-sm"></i>
+            </div>
+            <h2 class="font-bold text-gray-900">Avances</h2>
+            <span class="ml-auto bg-gray-200 text-gray-700 py-0.5 px-2.5 rounded-full text-xs font-bold">{{ avances|length }}</span>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for avance in avances %}
+            <div class="p-6 hover:bg-gray-50 transition-colors">
+                <div class="flex flex-col md:flex-row gap-6">
+                     <div class="flex-shrink-0">
+                        <div class="w-20 h-20 bg-green-50 rounded-lg border border-green-100 flex items-center justify-center text-green-600 font-bold text-xl">
+                            AV
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                             <h3 class="text-lg font-bold text-gray-900">{{ avance.beneficiaire.prenom }} {{ avance.beneficiaire.nom }}</h3>
+                             <span class="text-xl font-bold text-green-600">{{ format_currency(avance.montant) }}</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-building text-gray-400 w-4"></i>
+                                <span class="truncate">{{ avance.chantier.nom }}</span>
+                            </div>
+                             <div class="flex items-center gap-2">
+                                <i class="far fa-calendar text-gray-400 w-4"></i>
+                                <span>{{ avance.created_at.strftime('%d/%m/%Y à %H:%M') }}</span>
+                            </div>
+                        </div>
+
+                        {% if avance.description %}
+                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
+                            {{ avance.description }}
+                        </div>
+                        {% endif %}
+
+                        <div class="flex flex-wrap gap-3 mt-4">
+                             <form method="POST" action="{{ url_for('validation.valider_avance', id=avance.id, action='valider') }}" class="flex-1 sm:flex-none">
+                                <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                                    <i class="fas fa-check"></i> Valider
+                                </button>
+                            </form>
+                            <button type="button" onclick="openRefuseModal('avance', {{ avance.id }})" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-times"></i> Refuser
+                            </button>
+                             <div class="flex-1 sm:flex-none flex justify-end gap-2 sm:ml-auto">
+                                <a href="{{ url_for('saisies.modifier_saisie', type_saisie='avance', id=avance.id) }}" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='avance', id=avance.id) }}" onsubmit="return confirm('Supprimer définitivement ?');" class="inline-block">
+                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Heures Section -->
+    {% if heures %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+            <div class="p-1.5 bg-purple-100 text-purple-600 rounded-lg">
+                <i class="fas fa-clock text-sm"></i>
+            </div>
+            <h2 class="font-bold text-gray-900">Heures</h2>
+            <span class="ml-auto bg-gray-200 text-gray-700 py-0.5 px-2.5 rounded-full text-xs font-bold">{{ heures|length }}</span>
+        </div>
+        <div class="divide-y divide-gray-100">
+             {% for heure in heures %}
+            <div class="p-6 hover:bg-gray-50 transition-colors">
+                 <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-shrink-0">
+                         <div class="w-20 h-20 bg-purple-50 rounded-lg border border-purple-100 flex flex-col items-center justify-center text-purple-600">
+                            <span class="text-xl font-bold">{{ heure.quantite }}</span>
+                            <span class="text-xs uppercase font-medium">Heures</span>
+                        </div>
+                    </div>
+                     <div class="flex-1 min-w-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                             <h3 class="text-lg font-bold text-gray-900">{{ heure.type_travail|replace('_', ' ')|title }}</h3>
+                             <span class="text-xl font-bold text-gray-900">{{ format_currency(heure.cout_total) }}</span>
+                        </div>
+                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-building text-gray-400 w-4"></i>
+                                <span class="truncate">{{ heure.chantier.nom }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-user text-gray-400 w-4"></i>
+                                <span>{{ heure.saisi_par.prenom }} {{ heure.saisi_par.nom }}</span>
+                            </div>
+                             <div class="flex items-center gap-2">
+                                <i class="far fa-calendar text-gray-400 w-4"></i>
+                                <span>{{ heure.created_at.strftime('%d/%m/%Y à %H:%M') }}</span>
+                            </div>
+                        </div>
+
+                        {% if heure.description %}
+                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
+                            {{ heure.description }}
+                        </div>
+                        {% endif %}
+
+                        <div class="flex flex-wrap gap-3 mt-4">
+                             <form method="POST" action="{{ url_for('validation.valider_heure', id=heure.id, action='valider') }}" class="flex-1 sm:flex-none">
+                                <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                                    <i class="fas fa-check"></i> Valider
+                                </button>
+                            </form>
+                            <button type="button" onclick="openRefuseModal('heure', {{ heure.id }})" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                                <i class="fas fa-times"></i> Refuser
+                            </button>
+                             <div class="flex-1 sm:flex-none flex justify-end gap-2 sm:ml-auto">
+                                <a href="{{ url_for('saisies.modifier_saisie', type_saisie='heure', id=heure.id) }}" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='heure', id=heure.id) }}" onsubmit="return confirm('Supprimer définitivement ?');" class="inline-block">
+                                    <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+             {% endfor %}
+        </div>
     </div>
     {% endif %}
 </div>
 
-<div id="refuseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-semibold mb-4">Motif du refus</h3>
-        <form id="refuseForm" method="POST">
-            <textarea name="commentaire" required rows="3" 
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4"
-                      placeholder="Expliquez la raison du refus..."></textarea>
-            <div class="flex gap-2">
-                <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg">
-                    Confirmer le refus
-                </button>
-                <button type="button" onclick="hideRefuseModal()" class="flex-1 border border-gray-300 py-2 rounded-lg">
-                    Annuler
+<!-- Refusal Modal -->
+<div id="refuseModal" class="fixed inset-0 bg-gray-900/50 z-50 hidden backdrop-blur-sm transition-opacity" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h3 class="font-bold text-gray-900">Motif du refus</h3>
+                <button onclick="closeRefuseModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-        </form>
+            <form id="refuseForm" method="POST" class="p-6">
+                <div class="mb-4">
+                    <label for="commentaire" class="block text-sm font-medium text-gray-700 mb-2">Pourquoi refusez-vous cette demande ?</label>
+                    <textarea name="commentaire" id="commentaire" rows="4" required
+                              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
+                              placeholder="Indiquez la raison du refus pour le demandeur..."></textarea>
+                </div>
+                <div class="flex gap-3 justify-end">
+                    <button type="button" onclick="closeRefuseModal()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-sm transition-colors">
+                        Annuler
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm shadow-sm transition-colors">
+                        Refuser la demande
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
-function showRefuseModal(type, id) {
-    document.getElementById('refuseForm').action = `/validation/${type}/${id}/refuser`;
-    document.getElementById('refuseModal').classList.remove('hidden');
-    document.getElementById('refuseModal').classList.add('flex');
-}
+    function openRefuseModal(type, id) {
+        const modal = document.getElementById('refuseModal');
+        const form = document.getElementById('refuseForm');
+        form.action = `/validation/${type}/${id}/refuser`; // Ensure this route exists or adapt
+        // Based on memory: routes are /validation/valider_achat with action param, but usually refuse needs a separate handling or param.
+        // Let's check routes/validation.py if possible, but standard is often post to same or specific refuse route.
+        // The previous template used /validation/${type}/${id}/refuser, so I'll stick to that convention.
 
-function hideRefuseModal() {
-    document.getElementById('refuseModal').classList.add('hidden');
-    document.getElementById('refuseModal').classList.remove('flex');
-}
+        modal.classList.remove('hidden');
+        document.getElementById('commentaire').focus();
+    }
+
+    function closeRefuseModal() {
+        document.getElementById('refuseModal').classList.add('hidden');
+    }
+
+    // Close on click outside
+    document.getElementById('refuseModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRefuseModal();
+        }
+    });
 </script>
 {% endblock %}

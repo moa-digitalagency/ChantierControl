@@ -4,42 +4,112 @@
 
 {% block content %}
 <div class="space-y-6">
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Chantiers</h1>
-            <p class="text-gray-500">{{ chantiers|length }} chantier(s)</p>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Mes Chantiers</h1>
+            <p class="text-gray-500 text-sm mt-1">Gérez vos projets et suivez leur avancement ({{ chantiers|length }} projets).</p>
         </div>
         {% if session.get('user_role') == 'direction' %}
-        <a href="{{ url_for('chantiers.nouveau') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-            <i class="fas fa-plus"></i> Nouveau Chantier
+        <a href="{{ url_for('chantiers.nouveau') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <i class="fas fa-plus"></i>
+            <span>Nouveau chantier</span>
         </a>
         {% endif %}
     </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    <!-- Stats Summary (Optional, can be computed client side or just static for now) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                <i class="fas fa-building text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total Chantiers</p>
+                <p class="text-2xl font-bold text-gray-900">{{ chantiers|length }}</p>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div class="p-3 bg-green-50 text-green-600 rounded-lg">
+                <i class="fas fa-check-circle text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">En Cours</p>
+                <p class="text-2xl font-bold text-gray-900">{{ chantiers|selectattr('statut', 'equalto', 'en_cours')|list|length }}</p>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div class="p-3 bg-yellow-50 text-yellow-600 rounded-lg">
+                <i class="fas fa-clock text-xl"></i>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">En Attente</p>
+                <p class="text-2xl font-bold text-gray-900">{{ chantiers|selectattr('statut', 'equalto', 'en_attente')|list|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid Layout -->
+    {% if chantiers %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for chantier in chantiers %}
-        <a href="{{ url_for('chantiers.detail', id=chantier.id) }}" class="bg-white rounded-xl shadow hover:shadow-lg transition-shadow p-6">
-            <div class="flex items-start justify-between mb-4">
-                <div class="bg-blue-100 p-3 rounded-lg">
-                    <i class="fas fa-building text-blue-600 text-xl"></i>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-shadow duration-200 flex flex-col h-full group relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full {% if chantier.statut == 'en_cours' %}bg-green-500{% elif chantier.statut == 'termine' %}bg-gray-500{% else %}bg-yellow-500{% endif %}"></div>
+
+            <div class="p-6 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1 pr-2">
+                        <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-1" title="{{ chantier.nom }}">
+                            {{ chantier.nom }}
+                        </h3>
+                        <div class="flex items-center text-gray-500 text-sm mt-1">
+                            <i class="fas fa-map-marker-alt w-4 text-center mr-1"></i>
+                            <span class="truncate">{{ chantier.adresse or 'Adresse non spécifiée' }}</span>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if chantier.statut == 'en_cours' %}bg-green-100 text-green-800
+                        {% elif chantier.statut == 'termine' %}bg-gray-100 text-gray-800
+                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ chantier.statut|replace('_', ' ')|title }}
+                    </span>
                 </div>
-                <span class="px-2 py-1 text-xs rounded-full {% if chantier.statut == 'en_cours' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
-                    {{ chantier.statut|replace('_', ' ')|title }}
-                </span>
+
+                <div class="mt-auto space-y-4">
+                    <div class="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wide">Budget</p>
+                            <p class="font-semibold text-gray-900">{{ "{:,.0f}".format(chantier.budget_previsionnel).replace(',', ' ') }} MAD</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wide">Créé le</p>
+                            <p class="font-semibold text-gray-900">{{ chantier.date_creation.strftime('%d/%m/%Y') if chantier.date_creation else '-' }}</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('chantiers.detail', id=chantier.id) }}" class="block w-full text-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                        Voir le détail
+                    </a>
+                </div>
             </div>
-            <h3 class="font-semibold text-gray-900 mb-1">{{ chantier.nom }}</h3>
-            <p class="text-sm text-gray-500 mb-3">{{ chantier.adresse or 'Adresse non renseignée' }}</p>
-            <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-500">Budget:</span>
-                <span class="font-medium">{{ format_currency(chantier.budget_previsionnel) }}</span>
-            </div>
-        </a>
-        {% else %}
-        <div class="col-span-full bg-white rounded-xl shadow p-8 text-center">
-            <i class="fas fa-building text-gray-300 text-5xl mb-4"></i>
-            <p class="text-gray-500">Aucun chantier disponible</p>
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+            <i class="fas fa-building text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900">Aucun chantier</h3>
+        <p class="mt-1 text-gray-500">Vous n'avez pas encore de chantiers actifs.</p>
+        {% if session.get('user_role') == 'direction' %}
+        <div class="mt-6">
+            <a href="{{ url_for('chantiers.nouveau') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <i class="fas fa-plus -ml-1 mr-2"></i> Nouveau chantier
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

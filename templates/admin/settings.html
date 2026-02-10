@@ -1,60 +1,135 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Paramètres - {{ entreprise.nom }}{% endblock %}
-
-{% block page_title %}Paramètres Entreprise{% endblock %}
-{% block page_subtitle %}Modifier les informations de l'entreprise{% endblock %}
+{% block title %}Paramètres{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h3 class="font-bold text-gray-900">Informations Générales</h3>
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Paramètres</h1>
+            <p class="text-gray-500 text-sm mt-1">Gérez les informations de votre entreprise et les préférences.</p>
+        </div>
+    </div>
+
+    <!-- Settings Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Sidebar Navigation (Optional, or just static list for now) -->
+        <div class="lg:col-span-1 space-y-4">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <nav class="flex flex-col">
+                    <a href="#general" class="px-4 py-3 border-l-4 border-primary-500 bg-primary-50 text-primary-700 font-medium text-sm flex items-center gap-3">
+                        <i class="fas fa-building w-5 text-center"></i> Général
+                    </a>
+                    <a href="#" class="px-4 py-3 border-l-4 border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium text-sm flex items-center gap-3 transition-colors">
+                        <i class="fas fa-bell w-5 text-center"></i> Notifications <span class="ml-auto text-xs bg-gray-100 px-2 py-0.5 rounded-full text-gray-500">Bientôt</span>
+                    </a>
+                    <a href="#" class="px-4 py-3 border-l-4 border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium text-sm flex items-center gap-3 transition-colors">
+                        <i class="fas fa-users w-5 text-center"></i> Équipe <span class="ml-auto text-xs bg-gray-100 px-2 py-0.5 rounded-full text-gray-500">Bientôt</span>
+                    </a>
+                    <a href="#" class="px-4 py-3 border-l-4 border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium text-sm flex items-center gap-3 transition-colors">
+                        <i class="fas fa-file-invoice-dollar w-5 text-center"></i> Facturation <span class="ml-auto text-xs bg-gray-100 px-2 py-0.5 rounded-full text-gray-500">Bientôt</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-life-ring text-blue-500 mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-blue-900">Besoin d'aide ?</h4>
+                        <p class="text-xs text-blue-700 mt-1">Contactez le support technique pour toute assistance.</p>
+                        <a href="mailto:support@gestionchantiers.com" class="text-xs font-medium text-blue-600 hover:text-blue-800 mt-2 inline-block underline">Contacter le support</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <form method="POST" class="p-6 space-y-6">
-            <!-- Nom de l'entreprise -->
-            <div>
-                <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">Nom de l'entreprise <span class="text-red-500">*</span></label>
-                <input type="text" name="nom" id="nom" required
-                       class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500"
-                       value="{{ entreprise.nom }}">
-            </div>
-
-            <!-- Adresse -->
-            <div>
-                <label for="adresse" class="block text-sm font-medium text-gray-700 mb-1">Adresse complète</label>
-                <textarea name="adresse" id="adresse" rows="3"
-                          class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500">{{ entreprise.adresse or '' }}</textarea>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Téléphone -->
-                <div>
-                    <label for="telephone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
-                    <input type="tel" name="telephone" id="telephone"
-                           class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500"
-                           value="{{ entreprise.telephone or '' }}">
+        <!-- Main Content Form -->
+        <div class="lg:col-span-2 space-y-6">
+            <form method="POST" action="{{ url_for('admin.parametres') }}" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                    <h2 class="font-bold text-gray-900" id="general">Informations de l'entreprise</h2>
+                    <span class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Profil</span>
                 </div>
 
-                <!-- Email -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" name="email" id="email"
-                           class="w-full rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500"
-                           value="{{ entreprise.email or '' }}">
-                </div>
-            </div>
+                <div class="p-6 space-y-6">
+                    <!-- Logo Upload (Visual placeholder) -->
+                    <div class="flex items-center gap-6">
+                        <div class="w-20 h-20 bg-gray-100 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400">
+                            {% if entreprise.logo %}
+                            <img src="{{ url_for('static', filename='uploads/' + entreprise.logo) }}" class="w-full h-full object-cover rounded-xl">
+                            {% else %}
+                            <i class="fas fa-image text-3xl"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900">Logo de l'entreprise</h3>
+                            <p class="text-xs text-gray-500 mt-1 mb-3">JPG, PNG ou GIF. Max 2MB.</p>
+                            <label class="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer shadow-sm transition-colors">
+                                Changer le logo
+                                <input type="file" name="logo" class="hidden" accept="image/*">
+                            </label>
+                        </div>
+                    </div>
 
-            <div class="pt-4 flex justify-end gap-3">
-                <a href="{{ url_for('admin.index') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">
-                    Annuler
-                </a>
-                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium shadow-sm shadow-primary-500/30 transition-colors">
-                    Enregistrer
-                </button>
-            </div>
-        </form>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="col-span-2">
+                            <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">Nom de l'entreprise <span class="text-red-500">*</span></label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-building text-gray-400"></i>
+                                </div>
+                                <input type="text" name="nom" id="nom" value="{{ entreprise.nom }}" required
+                                       class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5">
+                            </div>
+                        </div>
+
+                        <div class="col-span-2">
+                            <label for="adresse" class="block text-sm font-medium text-gray-700 mb-1">Adresse postale</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-map-marker-alt text-gray-400"></i>
+                                </div>
+                                <input type="text" name="adresse" id="adresse" value="{{ entreprise.adresse or '' }}"
+                                       class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="telephone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-phone text-gray-400"></i>
+                                </div>
+                                <input type="tel" name="telephone" id="telephone" value="{{ entreprise.telephone or '' }}"
+                                       class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email de contact</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-envelope text-gray-400"></i>
+                                </div>
+                                <input type="email" name="email" id="email" value="{{ entreprise.email or '' }}"
+                                       class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                    <button type="reset" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Annuler
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <i class="fas fa-save mr-2"></i> Enregistrer les modifications
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
