@@ -44,11 +44,26 @@ def create_app():
 
     @app.route('/set_language/<lang_code>')
     def set_language(lang_code):
-        if lang_code in ['fr', 'en']:
+        if lang_code in ['fr', 'en', 'ar']:
             session['lang'] = lang_code
+            # Set default direction based on language
+            if lang_code == 'ar':
+                session['dir'] = 'rtl'
+            else:
+                session['dir'] = 'ltr'
 
         referrer = request.referrer
         # Basic open redirect protection: ensure referrer is from same domain
+        if referrer and request.host in referrer:
+             return redirect(referrer)
+        return redirect(url_for('index'))
+
+    @app.route('/set_direction/<direction>')
+    def set_direction(direction):
+        if direction in ['ltr', 'rtl']:
+            session['dir'] = direction
+
+        referrer = request.referrer
         if referrer and request.host in referrer:
              return redirect(referrer)
         return redirect(url_for('index'))
@@ -57,10 +72,19 @@ def create_app():
     def load_user_language():
         lang = session.get('lang')
         if not lang:
-            lang = request.accept_languages.best_match(['fr', 'en'])
+            lang = request.accept_languages.best_match(['fr', 'en', 'ar'])
         if not lang:
             lang = 'fr'
         g.lang = lang
+
+        # Set direction
+        direction = session.get('dir')
+        if not direction:
+            if lang == 'ar':
+                direction = 'rtl'
+            else:
+                direction = 'ltr'
+        g.dir = direction
     
     @app.context_processor
     def utility_processor():
@@ -75,7 +99,8 @@ def create_app():
             format_percentage=format_percentage,
             now=datetime.utcnow,
             t=t,
-            current_lang=getattr(g, 'lang', 'fr')
+            current_lang=getattr(g, 'lang', 'fr'),
+            current_dir=getattr(g, 'dir', 'ltr')
         )
     
     with app.app_context():
