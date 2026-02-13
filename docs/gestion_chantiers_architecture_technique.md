@@ -96,4 +96,4 @@ Le calcul des heures travaillées se fait via une logique Python `datetime` :
 
 ## 5. Déploiement
 
-Voir le document [Guide d'Installation](guide_installation.md) pour les détails sur les variables d'environnement et la procédure de mise en production.
+Voir le document [Guide d'Installation](gestion_chantiers_guide_installation.md) pour les détails sur les variables d'environnement et la procédure de mise en production.

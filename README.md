@@ -38,7 +38,7 @@ Une plateforme tout-en-un conçue pour les entreprises du BTP multi-chantiers.
 *   **Rôles & Permissions** :
     *   *Super Admin* (Plateforme), *Admin* (Entreprise), *Direction* (Validation), *Chef de Chantier* (Terrain), *Responsable Achats*.
 
-👉 **[Voir la liste exhaustive des fonctionnalités](docs/features_full_list.md)**
+👉 **[Voir la liste exhaustive des fonctionnalités](docs/gestion_chantiers_features_full_list.md)**
 
 ---
 
@@ -48,10 +48,10 @@ Toute la documentation technique et fonctionnelle se trouve dans le dossier [`do
 
 | Document | Description | Cible |
 | :--- | :--- | :--- |
-| **[Guide Fonctionnel](docs/features_full_list.md)** | La "Bible" des fonctionnalités, règles de gestion et validations. | Tous |
-| **[Manuel Utilisateur](docs/manuel_utilisateur.md)** | Guides pas-à-pas pour chaque rôle (Admin, Terrain, Direction). | Utilisateurs Finaux |
-| **[Architecture Technique](docs/architecture_technique.md)** | Structure du code, Schéma BDD, Flux de données. | Développeurs |
-| **[Guide d'Installation](docs/guide_installation.md)** | Procédures de déploiement (Dev & Prod). | DevOps |
+| **[Guide Fonctionnel](docs/gestion_chantiers_features_full_list.md)** | La "Bible" des fonctionnalités, règles de gestion et validations. | Tous |
+| **[Manuel Utilisateur](docs/gestion_chantiers_manuel_utilisateur.md)** | Guides pas-à-pas pour chaque rôle (Admin, Terrain, Direction). | Utilisateurs Finaux |
+| **[Architecture Technique](docs/gestion_chantiers_architecture_technique.md)** | Structure du code, Schéma BDD, Flux de données. | Développeurs |
+| **[Guide d'Installation](docs/gestion_chantiers_guide_installation.md)** | Procédures de déploiement (Dev & Prod). | DevOps |
 
 ---
 
