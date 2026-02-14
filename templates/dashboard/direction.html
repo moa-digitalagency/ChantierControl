@@ -131,7 +131,7 @@
                         <td class="px-6 py-4" data-label="{{ t('table_header_rate') }}">
                             <div class="flex items-center gap-2">
                                 <div class="w-20 bg-gray-200 rounded-full h-2">
-                                    <div class="h-2 rounded-full {% if item.kpi.taux_consommation > 80 %}bg-red-500{% elif item.kpi.taux_consommation > 60 %}bg-yellow-500{% else %}bg-green-500{% endif %}" style="width: {{ [item.kpi.taux_consommation, 100]|min }}%"></div>
+                                    <div class="h-2 rounded-full {% if item.kpi.taux_consommation > 80 %}bg-red-500{% elif item.kpi.taux_consommation > 60 %}bg-yellow-500{% else %}bg-green-500{% endif %}" data-width="{{ [item.kpi.taux_consommation, 100]|min }}%"></div>
                                 </div>
                                 <span class="text-sm">{{ format_percentage(item.kpi.taux_consommation) }}</span>
                             </div>

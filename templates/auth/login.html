@@ -7,13 +7,14 @@
     <meta name="theme-color" content="#3b82f6">
     <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
     <title>Connexion - Gestion Chantiers</title>
+
+    <!-- Config Meta Tags -->
+    <meta name="sw-url" content="{{ url_for('static', filename='sw.js') }}">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="{{ url_for('static', filename='js/auth-config.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
-    <script>
-        window.swUrl = "{{ url_for('static', filename='sw.js') }}";
-    </script>
 </head>
 <body class="login-bg min-h-screen flex items-center justify-center p-4 relative">
     <!-- Language Switcher -->

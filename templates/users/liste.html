@@ -132,15 +132,5 @@
     </div>
 </div>
 
-<script>
-    // Simple client-side search
-    document.getElementById('userSearch').addEventListener('keyup', function() {
-        let filter = this.value.toLowerCase();
-        let rows = document.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            let text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
-        });
-    });
-</script>
+<script src="{{ url_for('static', filename='js/users.js') }}"></script>
 {% endblock %}

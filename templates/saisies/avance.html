@@ -70,18 +70,5 @@
     </div>
 </div>
 
-<script>
-document.getElementById('photoInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.getElementById('photoPreview');
-            preview.src = e.target.result;
-            preview.classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
-    }
-});
-</script>
+<script src="{{ url_for('static', filename='js/saisies.js') }}"></script>
 {% endblock %}

@@ -65,7 +65,7 @@
                         <span class="font-medium">{{ format_currency(kpi.total_achats) }}</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div class="bg-blue-500 h-3 rounded-full" style="width: {{ (kpi.total_achats / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
+                        <div class="bg-blue-500 h-3 rounded-full" data-width="{{ (kpi.total_achats / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
                     </div>
                 </div>
                 <div>
@@ -74,7 +74,7 @@
                         <span class="font-medium">{{ format_currency(kpi.total_salaires) }}</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div class="bg-green-500 h-3 rounded-full" style="width: {{ (kpi.total_salaires / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
+                        <div class="bg-green-500 h-3 rounded-full" data-width="{{ (kpi.total_salaires / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
                     </div>
                 </div>
                 <div>
@@ -83,11 +83,11 @@
                         <span class="font-medium">{{ format_currency(kpi.total_transport) }}</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div class="bg-purple-500 h-3 rounded-full" style="width: {{ (kpi.total_transport / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
+                        <div class="bg-purple-500 h-3 rounded-full" data-width="{{ (kpi.total_transport / kpi.cout_total * 100) if kpi.cout_total > 0 else 0 }}%"></div>
                     </div>
                 </div>
             </div>
-            <canvas id="repartitionChart" class="mt-4" height="200"></canvas>
+            <canvas id="repartitionChart" class="mt-4" height="200" data-values='[{{ kpi.total_achats }}, {{ kpi.total_salaires }}, {{ kpi.total_transport }}]'></canvas>
         </div>
         
         <div class="bg-white rounded-xl shadow p-6">
@@ -109,7 +109,7 @@
                     </span>
                 </div>
             </div>
-            <canvas id="tresorerieChart" height="200"></canvas>
+            <canvas id="tresorerieChart" height="200" data-values='[{{ kpi.budget }}, {{ kpi.total_avances }}, {{ kpi.cout_total }}]'></canvas>
         </div>
     </div>
     
@@ -158,7 +158,7 @@
                     </div>
                     {% if role == 'direction' %}
                     <form method="POST" action="{{ url_for('chantiers.desassigner', id=chantier.id, user_id=assignment.user.id) }}">
-                        <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Retirer cet utilisateur?')">
+                        <button type="submit" class="text-red-600 hover:text-red-800" data-confirm="Retirer cet utilisateur?">
                             <i class="fas fa-times"></i>
                         </button>
                     </form>
@@ -175,36 +175,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-new Chart(document.getElementById('repartitionChart'), {
-    type: 'doughnut',
-    data: {
-        labels: ['Achats', 'Salaires', 'Transport'],
-        datasets: [{
-            data: [{{ kpi.total_achats }}, {{ kpi.total_salaires }}, {{ kpi.total_transport }}],
-            backgroundColor: ['#3B82F6', '#10B981', '#8B5CF6']
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom' } }
-    }
-});
-
-new Chart(document.getElementById('tresorerieChart'), {
-    type: 'bar',
-    data: {
-        labels: ['Budget', 'Avances', 'Dépenses'],
-        datasets: [{
-            data: [{{ kpi.budget }}, {{ kpi.total_avances }}, {{ kpi.cout_total }}],
-            backgroundColor: ['#6B7280', '#10B981', '#EF4444']
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-    }
-});
-</script>
+<script src="{{ url_for('static', filename='js/chantiers.js') }}"></script>
 {% endblock %}
