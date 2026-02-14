@@ -11,7 +11,12 @@ const palettes = {
     }
 };
 
-const role = window.userRole || 'default';
+function getMetaContent(name) {
+    const meta = document.querySelector(`meta[name="${name}"]`);
+    return meta ? meta.content : null;
+}
+
+const role = getMetaContent('user-role') || window.userRole || 'default';
 const theme = (role === 'super_admin') ? palettes.super_admin :
               (role === 'admin') ? palettes.admin : palettes.default;
 

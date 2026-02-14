@@ -151,19 +151,5 @@
     </div>
 </div>
 
-<script>
-function previewImage(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var img = document.getElementById('preview-image');
-            img.src = e.target.result;
-            img.classList.remove('hidden');
-            // Hide icon content
-            input.parentElement.querySelector('div').classList.add('opacity-0');
-        }
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-</script>
+<script src="{{ url_for('static', filename='js/main_oeuvre.js') }}"></script>
 {% endblock %}

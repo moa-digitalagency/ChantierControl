@@ -1,3 +1,8 @@
+function getMetaContent(name) {
+    const meta = document.querySelector(`meta[name="${name}"]`);
+    return meta ? meta.content : null;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
@@ -15,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Register Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        const swUrl = window.swUrl || '/static/sw.js';
+        const swUrl = getMetaContent('sw-url') || window.swUrl || '/static/sw.js';
         navigator.serviceWorker.register(swUrl)
             .then(registration => {
                 console.log('ServiceWorker registration successful with scope: ', registration.scope);

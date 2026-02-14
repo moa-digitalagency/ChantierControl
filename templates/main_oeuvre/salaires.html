@@ -15,7 +15,7 @@
                          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                             <i class="fas fa-building"></i>
                         </div>
-                        <select name="chantier_id" id="chantier_id" onchange="this.form.submit()" class="block w-full pl-10 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 bg-white text-gray-700">
+                        <select name="chantier_id" id="chantier_id" class="block w-full pl-10 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 bg-white text-gray-700">
                             <option value="">-- Tous les chantiers --</option>
                             {% for c in chantiers %}
                             <option value="{{ c.id }}" {% if selected_chantier_id == c.id %}selected{% endif %}>{{ c.nom }}</option>
@@ -26,7 +26,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-                <select name="filter" id="filterSelect" onchange="toggleCustomDates(this.value); if(this.value!='custom') this.form.submit()" class="block w-full md:w-48 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 bg-white text-gray-700 font-medium">
+                <select name="filter" id="filterSelect" class="block w-full md:w-48 rounded-xl border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm h-11 bg-white text-gray-700 font-medium">
                     <option value="day" {% if filter_type == 'day' %}selected{% endif %}>Aujourd'hui</option>
                     <option value="week" {% if filter_type == 'week' %}selected{% endif %}>Semaine (Lun-Dim)</option>
                     <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois (1-31)</option>
@@ -55,7 +55,7 @@
 
                  <div class="h-8 w-px bg-gray-200 mx-2 hidden md:block"></div>
 
-                 <button type="button" onclick="window.print()" class="text-gray-500 hover:text-primary-600 transition-colors p-2" title="Imprimer">
+                 <button type="button" id="print-btn" class="text-gray-500 hover:text-primary-600 transition-colors p-2" title="Imprimer">
                      <i class="fas fa-print"></i>
                  </button>
             </div>
@@ -192,35 +192,5 @@
     </div>
 </div>
 
-<script>
-function toggleCustomDates(value) {
-    const customDates = document.getElementById('customDates');
-    if (value === 'custom') {
-        customDates.classList.remove('hidden');
-    } else {
-        customDates.classList.add('hidden');
-    }
-}
-
-// Simple search function
-document.getElementById('tableSearch').addEventListener('keyup', function() {
-    var input, filter, table, tr, td, i, txtValue;
-    input = document.getElementById("tableSearch");
-    filter = input.value.toUpperCase();
-    table = document.querySelector("table");
-    tr = table.getElementsByTagName("tr");
-    for (i = 0; i < tr.length; i++) {
-        // Search in Name (column 0)
-        td = tr[i].getElementsByTagName("td")[0];
-        if (td) {
-            txtValue = td.textContent || td.innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                tr[i].style.display = "";
-            } else {
-                tr[i].style.display = "none";
-            }
-        }
-    }
-});
-</script>
+<script src="{{ url_for('static', filename='js/main_oeuvre.js') }}"></script>
 {% endblock %}

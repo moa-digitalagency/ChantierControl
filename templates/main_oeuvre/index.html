@@ -21,7 +21,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary-500 transition-colors">
                         <i class="fas fa-filter"></i>
                     </div>
-                    <select id="chantier_select" name="chantier_id" onchange="this.form.submit()" class="block w-full md:w-64 pl-10 pr-10 py-2.5 text-base border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent sm:text-sm rounded-xl bg-white shadow-sm hover:shadow-md transition-all appearance-none cursor-pointer h-11 text-gray-700">
+                    <select id="chantier_select" name="chantier_id" data-action="auto-submit" class="block w-full md:w-64 pl-10 pr-10 py-2.5 text-base border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent sm:text-sm rounded-xl bg-white shadow-sm hover:shadow-md transition-all appearance-none cursor-pointer h-11 text-gray-700">
                         <option value="">Tous les chantiers</option>
                         {% for c in chantiers %}
                         <option value="{{ c.id }}" {% if selected_chantier_id == c.id %}selected{% endif %}>{{ c.nom }}</option>
@@ -48,7 +48,7 @@
                 </a>
 
                 {% if session.get('user_role') in ['admin', 'direction', 'super_admin'] %}
-                <button onclick="document.getElementById('import-modal').classList.remove('hidden')" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-sm transition-all h-11" title="Importer Excel">
+                <button id="open-import-modal" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 shadow-sm transition-all h-11" title="Importer Excel">
                     <i class="fas fa-file-import text-gray-400"></i>
                     <span class="hidden sm:inline">Importer</span>
                 </button>
@@ -140,8 +140,8 @@
                                 {% endif %}
 
                                 {% if session.get('user_role') in ['admin', 'direction', 'super_admin'] %}
-                                <form action="{{ url_for('main_oeuvre.supprimer', id=ouvrier.id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ouvrier ?');" class="inline-block">
-                                    <button type="submit" class="text-gray-500 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors tooltip" data-tip="Supprimer">
+                                <form action="{{ url_for('main_oeuvre.supprimer', id=ouvrier.id) }}" method="POST" class="inline-block">
+                                    <button type="submit" data-confirm="Êtes-vous sûr de vouloir supprimer cet ouvrier ?" class="text-gray-500 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors tooltip" data-tip="Supprimer">
                                         <i class="fas fa-trash-alt text-lg"></i>
                                     </button>
                                 </form>
@@ -180,9 +180,9 @@
 </div>
 
 <!-- Import Modal -->
-<div id="import-modal" class="fixed inset-0 bg-gray-900/50 z-50 hidden backdrop-blur-sm transition-opacity opacity-0" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="transition: opacity 0.2s ease-in-out;">
+<div id="import-modal" class="fixed inset-0 bg-gray-900/50 z-50 hidden backdrop-blur-sm transition-opacity opacity-0 transition-opacity duration-200 ease-in-out" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
-        <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg w-full scale-95" id="import-modal-panel" style="transition: transform 0.2s ease-in-out;">
+        <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg w-full scale-95 transition-transform duration-200 ease-in-out" id="import-modal-panel">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
                     <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-50 sm:mx-0 sm:h-10 sm:w-10">
@@ -216,12 +216,12 @@
                                             <p class="mb-1 text-sm text-gray-500"><span class="font-semibold text-primary-600">Cliquez pour upload</span> ou glissez le fichier</p>
                                             <p class="text-xs text-gray-400" id="file-name-display">XLSX, XLS jusqu'à 10MB</p>
                                         </div>
-                                        <input id="file-upload" name="file" type="file" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required onchange="document.getElementById('file-name-display').innerText = this.files[0].name; document.getElementById('file-name-display').classList.add('text-gray-900', 'font-medium');">
+                                        <input id="file-upload" name="file" type="file" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required>
                                     </div>
                                 </div>
 
                                 <div class="flex justify-end gap-3 mt-8 pt-4 border-t border-gray-100">
-                                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 sm:text-sm shadow-sm">Annuler</button>
+                                    <button type="button" id="close-import-modal" class="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 sm:text-sm shadow-sm">Annuler</button>
                                     <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm shadow-sm shadow-primary-500/30">Importer</button>
                                 </div>
                             </form>
@@ -233,46 +233,5 @@
     </div>
 </div>
 
-<script>
-    // Search Functionality
-    document.getElementById('workerSearch').addEventListener('keyup', function() {
-        let filter = this.value.toLowerCase();
-        let rows = document.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            let name = row.querySelector('.worker-name').textContent.toLowerCase();
-            let poste = row.querySelector('.worker-poste').textContent.toLowerCase();
-            if (name.includes(filter) || poste.includes(filter)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
-
-    // Modal Logic
-    const modal = document.getElementById('import-modal');
-    const modalPanel = document.getElementById('import-modal-panel');
-
-    function openModal() {
-        modal.classList.remove('hidden');
-        // Small timeout to allow display:block to apply before opacity transition
-        setTimeout(() => {
-            modal.classList.remove('opacity-0');
-            modalPanel.classList.remove('scale-95');
-            modalPanel.classList.add('scale-100');
-        }, 10);
-    }
-
-    function closeModal() {
-        modal.classList.add('opacity-0');
-        modalPanel.classList.remove('scale-100');
-        modalPanel.classList.add('scale-95');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-        }, 200);
-    }
-
-    // Wire up trigger
-    document.querySelector('button[onclick*="import-modal"]').onclick = openModal;
-</script>
+<script src="{{ url_for('static', filename='js/main_oeuvre.js') }}"></script>
 {% endblock %}

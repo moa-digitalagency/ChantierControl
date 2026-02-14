@@ -43,7 +43,7 @@
                     <!-- Image / Icon -->
                     <div class="flex-shrink-0">
                         {% if achat.photo_justificatif %}
-                        <div class="relative group/img cursor-pointer" onclick="window.open('{{ url_for('static', filename='uploads/' + achat.photo_justificatif) }}')">
+                        <div class="relative group/img cursor-pointer" data-preview-url="{{ url_for('static', filename='uploads/' + achat.photo_justificatif) }}">
                             <img src="{{ url_for('static', filename='uploads/' + achat.photo_justificatif) }}"
                                  alt="Justificatif" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm">
                             <div class="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors rounded-lg flex items-center justify-center">
@@ -96,14 +96,14 @@
                                     <i class="fas fa-check"></i> Valider
                                 </button>
                             </form>
-                            <button type="button" onclick="openRefuseModal('achat', {{ achat.id }})" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                            <button type="button" data-action="refuse" data-type="achat" data-id="{{ achat.id }}" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
                                 <i class="fas fa-times"></i> Refuser
                             </button>
                             <div class="flex-1 sm:flex-none flex justify-end gap-2 sm:ml-auto">
                                 <a href="{{ url_for('saisies.modifier_saisie', type_saisie='achat', id=achat.id) }}" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Modifier">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='achat', id=achat.id) }}" onsubmit="return confirm('Supprimer définitivement ?');" class="inline-block">
+                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='achat', id=achat.id) }}" data-confirm="Supprimer définitivement ?" class="inline-block">
                                     <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
@@ -167,14 +167,14 @@
                                     <i class="fas fa-check"></i> Valider
                                 </button>
                             </form>
-                            <button type="button" onclick="openRefuseModal('avance', {{ avance.id }})" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                            <button type="button" data-action="refuse" data-type="avance" data-id="{{ avance.id }}" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
                                 <i class="fas fa-times"></i> Refuser
                             </button>
                              <div class="flex-1 sm:flex-none flex justify-end gap-2 sm:ml-auto">
                                 <a href="{{ url_for('saisies.modifier_saisie', type_saisie='avance', id=avance.id) }}" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='avance', id=avance.id) }}" onsubmit="return confirm('Supprimer définitivement ?');" class="inline-block">
+                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='avance', id=avance.id) }}" data-confirm="Supprimer définitivement ?" class="inline-block">
                                     <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
@@ -241,14 +241,14 @@
                                     <i class="fas fa-check"></i> Valider
                                 </button>
                             </form>
-                            <button type="button" onclick="openRefuseModal('heure', {{ heure.id }})" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+                            <button type="button" data-action="refuse" data-type="heure" data-id="{{ heure.id }}" class="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
                                 <i class="fas fa-times"></i> Refuser
                             </button>
                              <div class="flex-1 sm:flex-none flex justify-end gap-2 sm:ml-auto">
                                 <a href="{{ url_for('saisies.modifier_saisie', type_saisie='heure', id=heure.id) }}" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                                     <i class="fas fa-pencil-alt"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='heure', id=heure.id) }}" onsubmit="return confirm('Supprimer définitivement ?');" class="inline-block">
+                                <form method="POST" action="{{ url_for('saisies.supprimer_saisie', type_saisie='heure', id=heure.id) }}" data-confirm="Supprimer définitivement ?" class="inline-block">
                                     <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
@@ -270,7 +270,7 @@
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden transform transition-all">
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                 <h3 class="font-bold text-gray-900">Motif du refus</h3>
-                <button onclick="closeRefuseModal()" class="text-gray-400 hover:text-gray-600">
+                <button data-action="close-modal" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -282,7 +282,7 @@
                               placeholder="Indiquez la raison du refus pour le demandeur..."></textarea>
                 </div>
                 <div class="flex gap-3 justify-end">
-                    <button type="button" onclick="closeRefuseModal()" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-sm transition-colors">
+                    <button type="button" data-action="close-modal" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-sm transition-colors">
                         Annuler
                     </button>
                     <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm shadow-sm transition-colors">
@@ -294,28 +294,5 @@
     </div>
 </div>
 
-<script>
-    function openRefuseModal(type, id) {
-        const modal = document.getElementById('refuseModal');
-        const form = document.getElementById('refuseForm');
-        form.action = `/validation/${type}/${id}/refuser`; // Ensure this route exists or adapt
-        // Based on memory: routes are /validation/valider_achat with action param, but usually refuse needs a separate handling or param.
-        // Let's check routes/validation.py if possible, but standard is often post to same or specific refuse route.
-        // The previous template used /validation/${type}/${id}/refuser, so I'll stick to that convention.
-
-        modal.classList.remove('hidden');
-        document.getElementById('commentaire').focus();
-    }
-
-    function closeRefuseModal() {
-        document.getElementById('refuseModal').classList.add('hidden');
-    }
-
-    // Close on click outside
-    document.getElementById('refuseModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeRefuseModal();
-        }
-    });
-</script>
+<script src="{{ url_for('static', filename='js/validation.js') }}"></script>
 {% endblock %}

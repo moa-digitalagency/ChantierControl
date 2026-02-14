@@ -81,15 +81,5 @@
     </div>
 </div>
 
-<script>
-function calculerCout() {
-    const quantite = parseFloat(document.getElementById('quantite').value) || 0;
-    const tarif = parseFloat(document.getElementById('tarif').value) || 0;
-    const total = quantite * tarif;
-    document.getElementById('coutTotal').value = total.toFixed(2) + ' MAD';
-}
-
-document.getElementById('quantite').addEventListener('input', calculerCout);
-document.getElementById('tarif').addEventListener('input', calculerCout);
-</script>
+<script src="{{ url_for('static', filename='js/saisies.js') }}"></script>
 {% endblock %}

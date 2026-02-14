@@ -241,14 +241,6 @@
     </div>
 </div>
 
-<script>
-function toggleCustomDates(value) {
-    const customDates = document.getElementById('customDates');
-    if (value === 'custom') {
-        customDates.classList.remove('hidden');
-    } else {
-        customDates.classList.add('hidden');
-    }
-}
-</script>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main_oeuvre.js') }}"></script>
 {% endblock %}
